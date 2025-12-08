@@ -89,6 +89,30 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlag[] = [
     enabled: true,
     defaultEnabled: true
   },
+  {
+    id: 'trust_badges',
+    name: 'Trust Badges',
+    description: 'Show security and trust badges at checkout',
+    category: 'checkout',
+    enabled: true,
+    defaultEnabled: true
+  },
+  {
+    id: 'payment_logos',
+    name: 'Payment Method Logos',
+    description: 'Display accepted payment method logos',
+    category: 'checkout',
+    enabled: true,
+    defaultEnabled: true
+  },
+  {
+    id: 'quality_guarantee',
+    name: 'Quality Guarantee Badge',
+    description: 'Show quality guarantee message at checkout',
+    category: 'checkout',
+    enabled: true,
+    defaultEnabled: true
+  },
 
   // Marketing Features
   {

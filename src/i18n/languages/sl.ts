@@ -312,6 +312,8 @@ export const slovenian = {
     mainProductImage: 'Slika izdelka',
     priceLabel: 'Cena',
     viewLargerImage: 'Poglej večjo sliko',
+    prevProduct: 'Prejšnji',
+    nextProduct: 'Naslednji izdelek',
     giftOption: {
       title: 'Pošlji kot darilo',
       description: 'Bi radi poslali ta izdelek kot darilo prijatelju? Obiščite našo stran za darila, kjer lahko izberete možnosti pakiranja in dodate osebno sporočilo.',
@@ -509,7 +511,25 @@ export const slovenian = {
       percentOff: '{{percent}}% popusta',
       amountOff: '{{amount}} € popusta',
       remove: 'Odstrani kodo za popust'
-    }
+    },
+    trust: {
+      title: 'Zakaj kupovati pri nas?',
+      securePayment: 'Varno plačilo',
+      securePaymentDesc: '256-bit SSL šifriranje',
+      dataProtection: 'Zaščita podatkov',
+      dataProtectionDesc: 'GDPR skladno',
+      freeShipping: 'Brezplačna dostava',
+      freeShippingDesc: 'Nad 50€ naročila',
+      easyReturns: 'Enostavno vračilo',
+      easyReturnsDesc: '14 dni garancija'
+    },
+    quality: {
+      title: 'Garancija kakovosti',
+      description: 'Vsi naši izdelki so naravni, lokalno pridelani in ročno pripravljeni. Če niste zadovoljni, vam vrnemo denar.'
+    },
+    acceptedPayments: 'Sprejemamo',
+    secureCheckout: 'Varna blagajna',
+    sslProtected: 'SSL zaščiteno'
   },
   promotions: {
     freeShipping: 'Brezplačna dostava za naročila nad {{amount}}€',

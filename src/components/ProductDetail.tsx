@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabaseClient';
 import { Product, PackageOption } from '../types';
@@ -31,6 +31,11 @@ export function ProductDetail() {
   const [quantities, setQuantities] = useState<{ [key: string]: number }>({});
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
   const [productRecipes, setProductRecipes] = useState<any[]>([]);
+  
+  // Navigation state for prev/next products
+  const [allProducts, setAllProducts] = useState<{ id: number; name: string }[]>([]);
+  const [prevProduct, setPrevProduct] = useState<{ id: number; name: string } | null>(null);
+  const [nextProduct, setNextProduct] = useState<{ id: number; name: string } | null>(null);
 
   // Initialize analytics
   const { trackEcommerceEvent, trackEvent } = useAnalytics();
@@ -436,6 +441,37 @@ export function ProductDetail() {
     setProductRecipes(recipes);
   }, [product]);
 
+  // Fetch all products for prev/next navigation
+  useEffect(() => {
+    const fetchAllProducts = async () => {
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('products')
+          .select('id, name')
+          .eq('isActive', true)
+          .neq('id', 14)
+          .order('id', { ascending: true });
+
+        if (fetchError) {
+          console.error('Error fetching products for navigation:', fetchError);
+          return;
+        }
+
+        if (data && data.length > 0) {
+          setAllProducts(data);
+          const currentId = id ? parseInt(id, 10) : -1;
+          const currentIndex = data.findIndex(p => p.id === currentId);
+          
+          setPrevProduct(currentIndex > 0 ? data[currentIndex - 1] : null);
+          setNextProduct(currentIndex >= 0 && currentIndex < data.length - 1 ? data[currentIndex + 1] : null);
+        }
+      } catch (err) {
+        console.error('Error in product navigation:', err);
+      }
+    };
+    fetchAllProducts();
+  }, [id]);
+
   // Handler for quantity input changes
   const handleQuantityChange = (uniqId: string, value: string) => {
     const numValue = parseInt(value, 10);
@@ -555,11 +591,38 @@ export function ProductDetail() {
       }>
         <div className="pt-6 px-6 lg:px-12">
           <div className="max-w-6xl mx-auto">
-            {/* Back Button */}
-            <Link to={`/?lang=${i18n.language}`} className="inline-flex items-center text-brown-600 hover:text-brown-700 mb-8">
-              <ArrowLeft className="w-5 h-5 mr-2" />
-              {t('productDetailBackButton', 'Back to Products')}
-            </Link>
+            {/* Navigation Bar */}
+            <div className="flex items-center justify-between mb-8">
+              {/* Back Button */}
+              <Link to={`/?lang=${i18n.language}`} className="inline-flex items-center text-brown-600 hover:text-brown-700 transition-colors">
+                <ArrowLeft className="w-5 h-5 mr-2" />
+                {t('productDetailBackButton', 'Back to Products')}
+              </Link>
+
+              {/* Product Navigation */}
+              <div className="flex items-center gap-4">
+                {prevProduct && (
+                  <Link 
+                    to={`/izdelek/${prevProduct.id}?lang=${i18n.language}`}
+                    className="inline-flex items-center text-gray-500 hover:text-brown-600 transition-colors text-sm"
+                    title={prevProduct.name}
+                  >
+                    <ArrowLeft className="w-4 h-4 mr-1" />
+                    <span className="hidden sm:inline">{t('productDetail.prevProduct', 'Prejšnji')}</span>
+                  </Link>
+                )}
+                {nextProduct && (
+                  <Link 
+                    to={`/izdelek/${nextProduct.id}?lang=${i18n.language}`}
+                    className="inline-flex items-center text-brown-600 hover:text-brown-700 transition-colors font-medium"
+                    title={nextProduct.name}
+                  >
+                    <span className="hidden sm:inline">{t('productDetail.nextProduct', 'Naslednji izdelek')}</span>
+                    <ArrowRight className="w-4 h-4 ml-1" />
+                  </Link>
+                )}
+              </div>
+            </div>
 
             {/* Product Details Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 mb-12">
