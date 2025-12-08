@@ -2,6 +2,8 @@
  * Utility functions for handling image paths and image management
  */
 
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+
 // Define allowed image domains for security
 const ALLOWED_IMAGE_DOMAINS = [
   'i.ibb.co',
@@ -63,6 +65,43 @@ export function getImageUrl(path: string, fallbackUrl: string = DEFAULT_FALLBACK
   }
 
   try {
+    const supabaseUrl = SUPABASE_URL;
+
+    // If Supabase is configured and the path looks like one of our local images,
+    // build a URL to the public "marosaimages" storage bucket instead of serving
+    // directly from the Vite public folder. This works for:
+    // - "/images/..."
+    // - "./images/..."
+    // - "../images/..."
+    if (
+      supabaseUrl &&
+      (path.startsWith('/images/') || path.startsWith('./images/') || path.startsWith('../images/'))
+    ) {
+      // Normalize the path to a storage object key like "images/..."
+      let storagePath = path;
+
+      if (storagePath.startsWith('./')) {
+        storagePath = storagePath.substring(2);
+      }
+
+      if (storagePath.startsWith('../')) {
+        storagePath = storagePath.replace(/^\.\.\//, '');
+      }
+
+      if (storagePath.startsWith('/')) {
+        storagePath = storagePath.substring(1);
+      }
+
+      // Encode each segment so spaces and special characters are safe in the URL
+      const encodedPath = storagePath
+        .split('/')
+        .map(segment => encodeURIComponent(segment))
+        .join('/');
+
+      // Public bucket URL for Supabase Storage
+      return `${supabaseUrl}/storage/v1/object/public/marosaimages/${encodedPath}`;
+    }
+
     // Handle local paths that start with './'
     if (path.startsWith('./')) {
       const relativePath = path.substring(2);

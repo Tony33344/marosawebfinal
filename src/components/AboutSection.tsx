@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Leaf, BookOpen, Home, Award } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { getImageUrl } from '../utils/imageUtils';
 
 export const AboutSection = () => {
   const { t } = useTranslation();
@@ -84,7 +85,7 @@ export const AboutSection = () => {
           >
             <div className="relative">
               <img
-                src="https://i.ibb.co/krNV3sS/o-nas.png"
+                src={getImageUrl('/images/o nas.png')}
                 alt={t('about.imageAlt')}
                 className="w-full h-auto rounded-xl shadow-xl object-cover"
               />

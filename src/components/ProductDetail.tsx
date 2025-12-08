@@ -311,9 +311,9 @@ export function ProductDetail() {
             'https://i.ibb.co/s9X6Qt57/bucna-semena-1.jpg'
           ],
           2: [
-            'https://i.ibb.co/zTGSYLCX/olje.jpg',
-            'https://i.ibb.co/JWMLz5S5/bucno-olje2.jpg',
-            'https://i.ibb.co/s9X6Qt57/bucna-semena-1.jpg'
+            'https://wiwjkholoebkzzjoczjn.supabase.co/storage/v1/object/public/marosaimages/images/bucna-semena/bucnasemena2.jpg',
+            'https://wiwjkholoebkzzjoczjn.supabase.co/storage/v1/object/public/marosaimages/images/bucna-semena/bucna-semena-buce.jpg',
+            'https://wiwjkholoebkzzjoczjn.supabase.co/storage/v1/object/public/marosaimages/images/bucna-semena/vse1.jpg'
           ],
           // Konoplja
           3: [
@@ -326,7 +326,9 @@ export function ProductDetail() {
           ],
           // Melisa
           5: [
-            'https://i.ibb.co/rGVgSD8B/Melisa1.jpg'
+            'https://wiwjkholoebkzzjoczjn.supabase.co/storage/v1/object/public/marosaimages/images/melisa/melisa1.jpeg',
+            'https://wiwjkholoebkzzjoczjn.supabase.co/storage/v1/object/public/marosaimages/images/melisa/melisa2.jpeg',
+            'https://wiwjkholoebkzzjoczjn.supabase.co/storage/v1/object/public/marosaimages/images/melisa/melisa.jpg'
           ],
           // Poprova meta
           6: [
@@ -390,9 +392,33 @@ export function ProductDetail() {
         })
         .slice(0, 6);
 
-      console.log('Final gallery images:', validImages);
+      let finalGalleryImages = validImages;
 
-      setGalleryImages(validImages);
+      // Product-specific enforced galleries
+      const bucnaSemenaDefaults = [
+        'https://wiwjkholoebkzzjoczjn.supabase.co/storage/v1/object/public/marosaimages/images/bucna-semena/bucnasemena2.jpg',
+        'https://wiwjkholoebkzzjoczjn.supabase.co/storage/v1/object/public/marosaimages/images/bucna-semena/bucna-semena-buce.jpg'
+      ];
+
+      // Ensure Melisa (product id 5) always shows the provided Supabase images
+      const melisaGalleryDefaults = [
+        'https://wiwjkholoebkzzjoczjn.supabase.co/storage/v1/object/public/marosaimages/images/melisa/melisa1.jpeg',
+        'https://wiwjkholoebkzzjoczjn.supabase.co/storage/v1/object/public/marosaimages/images/melisa/melisa.jpg'
+      ];
+
+      const productId = typeof product.id === 'string' ? parseInt(product.id, 10) : product.id;
+      if (productId === 2) {
+        // For Bučna semena, force the Supabase images to avoid placeholders/invalid data
+        finalGalleryImages = bucnaSemenaDefaults;
+      }
+      if (productId === 5) {
+        // For Melisa, force only the provided Supabase images to avoid placeholders/duplicates
+        finalGalleryImages = melisaGalleryDefaults;
+      }
+
+      console.log('Final gallery images:', finalGalleryImages);
+
+      setGalleryImages(finalGalleryImages);
     };
 
     processImages();

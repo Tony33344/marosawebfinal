@@ -1,10 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Product } from '../types';
-import { getProductTranslation } from '../data/productTranslations';
-import { useState } from 'react';
 import { ShoppingBag } from 'lucide-react';
-import { getImageUrl } from '../utils/imageUtils';
 import { Image } from './Image';
 
 interface ProductCardProps {
@@ -13,7 +10,6 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const { i18n, t } = useTranslation();
-  const [isHovered, setIsHovered] = useState(false);
 
   // Use database translations if available, fallback to hardcoded translations
   // For Slovenian language, always use the base name field
@@ -56,6 +52,10 @@ export function ProductCard({ product }: ProductCardProps) {
     ? `/darilo?lang=${i18n.language}`
     : `/izdelek/${product.id}?lang=${i18n.language}`;
 
+  const displayImageSrc = product.id === '13' || product.id === 13
+    ? 'https://wiwjkholoebkzzjoczjn.supabase.co/storage/v1/object/public/marosaimages/images/pegasti-badelj/pegastibadeljmain.png'
+    : (product.image_url || '');
+
   return (
     <Link
       to={productLink}
@@ -63,8 +63,6 @@ export function ProductCard({ product }: ProductCardProps) {
       onClick={() => {
         window.scrollTo(0, 0);
       }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       {/* Badge for organic products */}
       {product.category === 'organic' && (
@@ -76,10 +74,11 @@ export function ProductCard({ product }: ProductCardProps) {
       {/* Image container with overlay */}
       <div className="relative overflow-hidden" style={{ aspectRatio: '4/3' }}>
         <Image
-          src={product.image_url || ''}
+          src={displayImageSrc}
           alt={translatedName}
           fallbackSrc="/images/placeholder-product.svg"
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          style={product.id === '13' || product.id === 13 ? { objectPosition: 'center 25%' } : undefined}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 

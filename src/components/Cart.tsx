@@ -174,7 +174,11 @@ export const Cart: React.FC = () => {
                   {/* Mobile Layout */}
                   <div className="md:hidden">
                     <div className="flex items-start space-x-3 mb-3">
-                      <img src={item.image_url || '/images/placeholder-product.svg'} alt={translatedName} className="w-16 h-16 object-cover rounded flex-shrink-0" />
+                      <img
+                        src={getImageUrl(item.image_url || '/images/placeholder-product.svg')}
+                        alt={translatedName}
+                        className="w-16 h-16 object-cover rounded flex-shrink-0"
+                      />
                       <div className="flex-1 min-w-0">
                         <Link to={`/izdelek/${item.id}?lang=${i18n.language}`} className="font-semibold text-base hover:text-brown-700 block">
                           {translatedName}
@@ -221,7 +225,11 @@ export const Cart: React.FC = () => {
                   <div className="hidden md:grid grid-cols-6 gap-4 items-center">
                     {/* Product Info */}
                     <div className="col-span-2 flex items-center space-x-3">
-                      <img src={item.image_url || '/images/placeholder-product.svg'} alt={translatedName} className="w-16 h-16 object-cover rounded" />
+                      <img
+                        src={getImageUrl(item.image_url || '/images/placeholder-product.svg')}
+                        alt={translatedName}
+                        className="w-16 h-16 object-cover rounded"
+                      />
                       <div>
                         <Link to={`/izdelek/${item.id}?lang=${i18n.language}`} className="font-semibold text-lg hover:text-brown-700">
                           {translatedName}

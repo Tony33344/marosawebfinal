@@ -16,6 +16,7 @@ interface ImageProps {
   srcSet?: string;
   role?: string;
   ariaLabel?: string;
+  style?: React.CSSProperties;
 }
 
 /**
@@ -41,7 +42,8 @@ export function Image({
   sizes,
   srcSet,
   role,
-  ariaLabel
+  ariaLabel,
+  style
 }: ImageProps) {
   const [imageSrc, setImageSrc] = useState<string>('');
   const [error, setError] = useState<boolean>(false);
@@ -70,7 +72,11 @@ export function Image({
 
     // Only set fallback if we're not already using it
     if (imageSrc !== fallbackSrc) {
-      setImageSrc(fallbackSrc);
+      const processedFallback =
+        fallbackSrc.startsWith('http://') || fallbackSrc.startsWith('https://')
+          ? fallbackSrc
+          : getImageUrl(fallbackSrc, fallbackSrc);
+      setImageSrc(processedFallback);
     }
   };
 
@@ -83,7 +89,11 @@ export function Image({
 
   return (
     <img
-      src={error ? fallbackSrc : imageSrc}
+      src={error
+        ? (fallbackSrc.startsWith('http://') || fallbackSrc.startsWith('https://')
+            ? fallbackSrc
+            : getImageUrl(fallbackSrc, fallbackSrc))
+        : imageSrc}
       alt={alt}
       className={`${className} ${!isLoaded ? 'opacity-0' : 'opacity-100 transition-opacity duration-300'}`}
       width={width}
@@ -99,6 +109,7 @@ export function Image({
       role={isDecorative ? 'presentation' : role}
       aria-label={ariaLabel}
       aria-hidden={isDecorative}
+      style={style}
     />
   );
 }

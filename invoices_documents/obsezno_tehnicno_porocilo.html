@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Obsežno tehnično poročilo - Kmetija Maroša</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #2d5a27;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #2d5a27;
+            margin: 0;
+            font-size: 2.2em;
+        }
+        .header p {
+            color: #666;
+            margin: 10px 0 0 0;
+            font-size: 1.1em;
+        }
+        .section {
+            margin: 30px 0;
+        }
+        .section h2 {
+            color: #2d5a27;
+            border-bottom: 2px solid #e8f5e8;
+            padding-bottom: 10px;
+            font-size: 1.5em;
+        }
+        .section h3 {
+            color: #4a7c59;
+            margin-top: 25px;
+            font-size: 1.2em;
+        }
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .tech-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 5px solid #2d5a27;
+        }
+        .tech-card h4 {
+            color: #2d5a27;
+            margin-top: 0;
+            font-size: 1.1em;
+        }
+        .feature-list {
+            background: #e8f5e8;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .feature-list h4 {
+            color: #2d5a27;
+            margin-top: 0;
+        }
+        .feature-list ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .feature-list li {
+            margin: 5px 0;
+        }
+        .highlight {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .stats-box {
+            background: linear-gradient(135deg, #2d5a27, #4a7c59);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 30px 0;
+        }
+        .stats-box h3 {
+            margin: 0 0 15px 0;
+            font-size: 1.4em;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            display: block;
+        }
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        .toc {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .toc h3 {
+            color: #2d5a27;
+            margin-top: 0;
+        }
+        .toc ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .toc li {
+            margin: 8px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+        .toc li:before {
+            content: "→";
+            color: #2d5a27;
+            position: absolute;
+            left: 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            color: #666;
+        }
+        @media print {
+            body { background: white; }
+            .container { box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 OBSEŽNO TEHNIČNO POROČILO</h1>
+            <p>Spletna trgovina Kmetija Maroša - Celotna implementacija</p>
+            <p><strong>Status:</strong> Pripravljena za zagon 1.9.2025</p>
+        </div>
+
+        <div class="toc">
+            <h3>📑 Kazalo vsebine</h3>
+            <ul>
+                <li>Tehnična arhitektura</li>
+                <li>E-trgovinske funkcionalnosti</li>
+                <li>Napredne funkcionalnosti</li>
+                <li>Uporabniški sistem</li>
+                <li>Mobilna optimizacija</li>
+                <li>Večjezična podpora</li>
+                <li>Varnost in GDPR</li>
+                <li>Email sistem</li>
+                <li>Administratorski panel</li>
+                <li>Testiranje in kakovost</li>
+                <li>Deployment in hosting</li>
+                <li>Performanse in optimizacija</li>
+                <li>Analitika in sledenje</li>
+                <li>Vzdrževanje in podpora</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>🎯 Pregled projekta</h2>
+            <p>Razvili smo celotno spletno trgovino za Kmetijo Maroša - moderno, varno in uporabniku prijazno e-trgovino za prodajo kmetijskih izdelkov. Projekt vključuje vse sodobne funkcionalnosti, ki jih potrebuje uspešna spletna trgovina.</p>
+            
+            <div class="highlight">
+                <strong>🌐 Spletna stran:</strong> www.kmetija-marosa.si<br>
+                <strong>📅 Zagon:</strong> 1. september 2025<br>
+                <strong>🎯 Cilj:</strong> Profesionalna spletna prodaja kmetijskih izdelkov
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🏗️ Tehnična arhitektura</h2>
+            <div class="tech-grid">
+                <div class="tech-card">
+                    <h4>Frontend tehnologije</h4>
+                    <ul>
+                        <li><strong>React 18</strong> - najnovejša verzija</li>
+                        <li><strong>TypeScript</strong> - tipiziran JavaScript</li>
+                        <li><strong>Vite</strong> - hiter build tool</li>
+                        <li><strong>Tailwind CSS</strong> - odzivni dizajn</li>
+                        <li><strong>Framer Motion</strong> - animacije</li>
+                        <li><strong>React Router</strong> - navigacija</li>
+                        <li><strong>i18next</strong> - večjezičnost</li>
+                    </ul>
+                </div>
+                <div class="tech-card">
+                    <h4>Backend in infrastruktura</h4>
+                    <ul>
+                        <li><strong>Supabase</strong> - PostgreSQL baza</li>
+                        <li><strong>Netlify</strong> - hosting in CDN</li>
+                        <li><strong>Stripe</strong> - plačilni sistem</li>
+                        <li><strong>Google Apps Script</strong> - email</li>
+                        <li><strong>GitHub</strong> - verzioniranje</li>
+                        <li><strong>CI/CD</strong> - avtomatski deployment</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🛒 E-trgovinske funkcionalnosti</h2>
+            
+            <div class="feature-list">
+                <h4>1. Katalog izdelkov</h4>
+                <ul>
+                    <li>Dinamičen prikaz izdelkov s profesionalnimi fotografijami</li>
+                    <li>Kategorije izdelkov za enostavno navigacijo</li>
+                    <li>Filtriranje in iskanje po imenu, kategoriji, ceni</li>
+                    <li>Podrobne strani izdelkov z opisom, sestavinami, alergeni</li>
+                    <li>Galerija slik z možnostjo povečave</li>
+                    <li>Ocenjevanje izdelkov s komentarji kupcev</li>
+                </ul>
+            </div>
+
+            <div class="feature-list">
+                <h4>2. Košarica in nakupovanje</h4>
+                <ul>
+                    <li>Napredna košarica z vztrajnim shranjevanjem</li>
+                    <li>Dodajanje/odstranjevanje izdelkov z animacijami</li>
+                    <li>Spreminjanje količin z validacijo zalog</li>
+                    <li>Izračun skupne cene z DDV in dostavo</li>
+                    <li>Shranjevanje košarice med sejami</li>
+                </ul>
+            </div>
+
+            <div class="feature-list">
+                <h4>3. Sistem naročil</h4>
+                <ul>
+                    <li>Večstopenjski checkout proces (4 koraki)</li>
+                    <li>Gostujočo nakupovanje brez registracije</li>
+                    <li>Registrirani uporabniki s hitrejšim procesom</li>
+                    <li>Validacija podatkov na vseh korakih</li>
+                    <li>Potrditev po emailu z vsemi podrobnostmi</li>
+                </ul>
+            </div>
+
+            <div class="feature-list">
+                <h4>4. Plačilni sistem</h4>
+                <ul>
+                    <li>Stripe integracija za varna spletna plačila</li>
+                    <li>Podprte kartice: Visa, Mastercard, American Express</li>
+                    <li>3D Secure avtentikacija za dodatno varnost</li>
+                    <li>Plačilo na prevzem za lokalne stranke</li>
+                    <li>Bančno nakazilo z avtomatskim usklajevanjem</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🎁 Napredne funkcionalnosti</h2>
+            
+            <div class="tech-grid">
+                <div class="tech-card">
+                    <h4>Sistem za darila</h4>
+                    <ul>
+                        <li>Darilni paketi s personaliziranimi sporočili</li>
+                        <li>Darilni voucher-ji z različnimi vrednostmi</li>
+                        <li>Dostava na drug naslov</li>
+                        <li>Posebno pakiranje za darila</li>
+                        <li>Časovno načrtovana dostava</li>
+                    </ul>
+                </div>
+                <div class="tech-card">
+                    <h4>Sistem popustov</h4>
+                    <ul>
+                        <li>Popustne kode z različnimi pravili</li>
+                        <li>Količinski popusti za večje nakupe</li>
+                        <li>Sezonske akcije z avtomatskim aktiviranjem</li>
+                        <li>Popusti za zvestobo za redne stranke</li>
+                        <li>Kombiniranje popustov</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-box">
+            <h3>📊 Obseg projekta</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-number">500+</span>
+                    <span class="stat-label">ur strokovnega dela</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">4</span>
+                    <span class="stat-label">jeziki podprti</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">50+</span>
+                    <span class="stat-label">funkcionalnosti</span>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔒 Varnost in GDPR</h2>
+            <div class="feature-list">
+                <h4>Varnostne funkcije</h4>
+                <ul>
+                    <li>SSL/TLS šifriranje za vso komunikacijo</li>
+                    <li>Content Security Policy (CSP) proti XSS napadom</li>
+                    <li>CORS zaščita za API klice</li>
+                    <li>Rate limiting proti DDoS napadom</li>
+                    <li>Input validacija na frontend in backend</li>
+                    <li>SQL injection zaščita z prepared statements</li>
+                </ul>
+            </div>
+            
+            <div class="feature-list">
+                <h4>GDPR skladnost</h4>
+                <ul>
+                    <li>Jasna soglasja za zbiranje podatkov</li>
+                    <li>Pravica do pozabe z avtomatskim brisanjem</li>
+                    <li>Izvoz podatkov v strojno berljivem formatu</li>
+                    <li>Minimizacija podatkov - zbiramo le potrebne</li>
+                    <li>Pseudonimizacija občutljivih podatkov</li>
+                    <li>Redni varnostni pregledi in posodobitve</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🧪 Testiranje s testnimi kupci</h2>
+            <div class="highlight">
+                <strong>Obsežno testiranje:</strong> Izvedli smo temeljito testiranje z uporabo testnih kupcev za simulacijo realnih nakupovalnih scenarijev. To vključuje testiranje celotnega nakupovalnega procesa, plačilnih sistemov, email komunikacije in uporabniške izkušnje na različnih napravah in brskalnikih.
+            </div>
+            
+            <div class="feature-list">
+                <h4>Vrste testiranja</h4>
+                <ul>
+                    <li><strong>Avtomatizirano testiranje</strong> - Unit, integration in E2E testi</li>
+                    <li><strong>Testiranje s testnimi kupci</strong> - Simulacija realnih nakupov</li>
+                    <li><strong>Performance testiranje</strong> - Optimizacija hitrosti</li>
+                    <li><strong>Cross-browser testiranje</strong> - Kompatibilnost</li>
+                    <li><strong>Accessibility testiranje</strong> - Dostopnost za vse</li>
+                    <li><strong>Security testiranje</strong> - Varnostne luknje</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>💰 Vrednost projekta</h2>
+            <div class="stats-box">
+                <h3>Finančni pregled</h3>
+                <div style="text-align: left; max-width: 400px; margin: 0 auto;">
+                    <p><strong>Polna cena projekta:</strong> 9.900 EUR</p>
+                    <p><strong>Popust (60%):</strong> -5.940 EUR</p>
+                    <p><strong>Dogovorjena cena:</strong> 3.960 EUR</p>
+                    <p><strong>Vključuje:</strong> domeno in hosting za 1 leto</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p><strong>Status:</strong> ✅ Pripravljena za zagon 1.9.2025</p>
+            <p><strong>Lokacija:</strong> www.kmetija-marosa.si</p>
+            <p><strong>Podpora:</strong> 90 dni brezplačne tehnične podpore</p>
+        </div>
+    </div>
+</body>
+</html>

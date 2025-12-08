@@ -18,6 +18,7 @@
     "deploy:secure": "./deploy-secure.sh",
     "deploy:edge-functions": "node scripts/deploy-edge-functions.mjs",
     "verify-env": "node scripts/verify-env.mjs",
+    "upload:images": "node scripts/upload-images-to-supabase.mjs",
     "predeploy": "npm run verify-env",
     "prebuild": "npm run verify-env",
     "security-check": "npm run verify-env",

@@ -1,0 +1,75 @@
+{
+  "timestamp": "2025-07-19T07:26:33.862Z",
+  "baseUrl": "https://marosatest.netlify.app",
+  "totalTests": 66,
+  "passedTests": 54,
+  "failedTests": 12,
+  "issues": [
+    {
+      "test": "Add to cart functionality (sl)",
+      "details": "",
+      "timestamp": "2025-07-19T07:31:27.163Z"
+    },
+    {
+      "test": "Checkout form fields found (sl)",
+      "details": "Found 1/6 fields",
+      "timestamp": "2025-07-19T07:32:40.108Z"
+    },
+    {
+      "test": "Registration form fields found (sl)",
+      "details": "Found 1 fields",
+      "timestamp": "2025-07-19T07:33:05.699Z"
+    },
+    {
+      "test": "Add to cart functionality (en)",
+      "details": "",
+      "timestamp": "2025-07-19T07:37:58.082Z"
+    },
+    {
+      "test": "Checkout form fields found (en)",
+      "details": "Found 0/6 fields",
+      "timestamp": "2025-07-19T07:39:01.296Z"
+    },
+    {
+      "test": "Registration form fields found (en)",
+      "details": "Found 0 fields",
+      "timestamp": "2025-07-19T07:39:23.571Z"
+    },
+    {
+      "test": "Add to cart functionality (de)",
+      "details": "",
+      "timestamp": "2025-07-19T07:44:25.280Z"
+    },
+    {
+      "test": "Checkout form fields found (de)",
+      "details": "Found 0/6 fields",
+      "timestamp": "2025-07-19T07:45:28.845Z"
+    },
+    {
+      "test": "Registration form fields found (de)",
+      "details": "Found 0 fields",
+      "timestamp": "2025-07-19T07:45:51.978Z"
+    },
+    {
+      "test": "Add to cart functionality (hr)",
+      "details": "",
+      "timestamp": "2025-07-19T07:50:55.096Z"
+    },
+    {
+      "test": "Checkout form fields found (hr)",
+      "details": "Found 0/6 fields",
+      "timestamp": "2025-07-19T07:51:58.751Z"
+    },
+    {
+      "test": "Registration form fields found (hr)",
+      "details": "Found 0 fields",
+      "timestamp": "2025-07-19T07:52:21.937Z"
+    }
+  ],
+  "translations": {
+    "missing": [],
+    "hardcoded": []
+  },
+  "performance": {},
+  "accessibility": []
+}

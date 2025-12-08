@@ -149,7 +149,7 @@ export const products: Product[] = [
     id: 18,
     name: 'Pegasti badelj',
     description: 'Ekološko pridelana semena za zdravo življenje',
-    image: 'https://i.ibb.co/6RxY7m8v/Pegasti-badelj-1.jpg',
+    image: 'https://wiwjkholoebkzzjoczjn.supabase.co/storage/v1/object/public/marosaimages/images/pegasti-badelj/pegastibadeljmain.png',
     weight: "250g",
     price: "9,50 €"
   }
