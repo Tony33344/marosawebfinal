@@ -273,6 +273,22 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlag[] = [
     enabled: false,
     defaultEnabled: false
   },
+  {
+    id: 'canonical_urls',
+    name: 'Canonical URLs',
+    description: 'Add canonical URL tags to prevent duplicate content',
+    category: 'seo',
+    enabled: true,
+    defaultEnabled: true
+  },
+  {
+    id: 'hreflang_tags',
+    name: 'Hreflang Tags',
+    description: 'Add language alternative tags for multilingual SEO',
+    category: 'seo',
+    enabled: true,
+    defaultEnabled: true
+  },
 
   // Analytics Features
   {
