@@ -91,6 +91,19 @@ const AdminNavigation: React.FC = () => {
         >
           {t('admin.navigation.translations', 'Translations')}
         </Link>
+        <Link
+          to="/admin/features"
+          className={`px-6 py-3 text-center flex-1 ${isActive('/admin/features')
+            ? 'bg-amber-600 text-white font-medium'
+            : 'text-gray-700 hover:bg-amber-50'}`}
+          onClick={(e) => {
+            console.log('Features link clicked');
+            e.preventDefault();
+            window.location.href = '/admin/features';
+          }}
+        >
+          {t('admin.navigation.features', 'Features')}
+        </Link>
       </nav>
     </div>
   );

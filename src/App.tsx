@@ -37,6 +37,7 @@ import { LoginPage } from './pages/LoginPage';
 import { AuthCallbackPage } from './pages/AuthCallbackPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 const BannerDiscountManager = lazy(() => import('./pages/admin/BannerDiscountManager').then(module => ({ default: module.BannerDiscountManager })));
+const FeatureFlagsManager = lazy(() => import('./pages/admin/FeatureFlagsManager'));
 import { OrderConfirmationPage } from './pages/OrderConfirmationPage';
 import { OrderSuccessPage } from './pages/OrderSuccessPage';
 import { StripeProvider } from './components/StripeProvider';
@@ -213,6 +214,13 @@ function App() {
                 <SecureAdminRoute>
                   <Suspense fallback={<PageLoadingSpinner />}>
                     <TranslationManager />
+                  </Suspense>
+                </SecureAdminRoute>
+              } />
+              <Route path="/admin/features" element={
+                <SecureAdminRoute>
+                  <Suspense fallback={<PageLoadingSpinner />}>
+                    <FeatureFlagsManager />
                   </Suspense>
                 </SecureAdminRoute>
               } />

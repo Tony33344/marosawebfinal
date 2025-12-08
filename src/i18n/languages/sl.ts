@@ -72,7 +72,27 @@ export const slovenian = {
       products: 'Upravljanje izdelkov',
       settings: 'Skrbniške nastavitve',
       bannerDiscounts: 'Upravljanje popustov',
-      translations: 'Prevodi'
+      translations: 'Prevodi',
+      features: 'Funkcionalnosti'
+    },
+    featureFlags: {
+      title: 'Upravljanje funkcionalnosti',
+      subtitle: 'Vklopi ali izklopi funkcije spletne strani',
+      all: 'Vse',
+      enabled: 'omogočeno',
+      enableAll: 'Omogoči vse',
+      disableAll: 'Onemogoči vse',
+      save: 'Shrani spremembe',
+      reset: 'Ponastavi',
+      saved: 'Shranjeno!',
+      unsavedChanges: 'Neshranjene spremembe',
+      confirmReset: 'Ali ste prepričani, da želite ponastaviti vse funkcije na privzete vrednosti?',
+      defaultEnabled: 'Ta funkcija je privzeto omogočena',
+      helpTitle: 'Kako delujejo funkcionalnosti',
+      help1: 'Preklapljajte funkcije za nadzor nad tem, kaj je vidno na vaši spletni strani',
+      help2: 'Spremembe začnejo veljati takoj po shranjevanju',
+      help3: 'Onemogočene funkcije so popolnoma skrite strankam',
+      help4: 'Uporabite "Ponastavi" za obnovitev vseh privzetih nastavitev'
     },
     orderManagement: {
       title: 'Upravljanje naročil',
