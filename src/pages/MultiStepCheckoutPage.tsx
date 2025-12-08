@@ -190,14 +190,13 @@ export const MultiStepCheckoutPage: React.FC = () => {
         setLoadingDetails(false);
       } catch (err) {
         console.error('Error fetching product details:', err);
-        errorHandler.captureError(err, { context: 'fetchProductDetails' });
         setError(t('checkout.errors.loadingProducts', 'Error loading product details. Please try again.'));
         setLoadingDetails(false);
       }
     };
 
     fetchProductDetails();
-  }, [cart, gifts, t, errorHandler]);
+  }, [cart, gifts, t]);
 
   // Calculate subtotal
   const calculateSubtotal = useCallback(() => {
@@ -729,11 +728,7 @@ export const MultiStepCheckoutPage: React.FC = () => {
     }
   }, [user, authLoading]); // Rerun when auth state changes
 
-  // Debug cart state
-  useEffect(() => {
-    console.log('Cart state in MultiStepCheckoutPage:', cart);
-    console.log('Cart items details:', cartItemsDetails);
-  }, [cart, cartItemsDetails]);
+
 
   // Fetch user profile data if logged in
   useEffect(() => {
@@ -792,7 +787,6 @@ export const MultiStepCheckoutPage: React.FC = () => {
         }
       } catch (err) {
         console.error('Error fetching user profile:', err);
-        errorHandler.captureError(err, { context: 'fetchUserProfile' });
       } finally {
         clearTimeout(safetyTimeout);
         setLoadingUserProfile(false);
@@ -807,7 +801,7 @@ export const MultiStepCheckoutPage: React.FC = () => {
       // This will ensure any pending timeouts are cleared if the component unmounts
       setLoadingUserProfile(false);
     };
-  }, [user, errorHandler, userProfileFetched]);
+  }, [user, userProfileFetched]);
 
   // Render different content based on checkoutStep
   return (
