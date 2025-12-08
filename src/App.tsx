@@ -65,10 +65,15 @@ import { TestToastNotification } from './pages/TestToastNotification';
 import { TestStickyNotification } from './pages/TestStickyNotification';
 import { CookieConsent } from './components/CookieConsent';
 import { CartNotificationWrapper } from './components/CartNotificationWrapper';
+import { HelmetProvider } from 'react-helmet-async';
+import { HomePageSchema } from './components/seo/StructuredData';
+import { HomePageMeta } from './components/seo/OpenGraph';
 
 function HomePage() {
   return (
     <>
+      <HomePageMeta />
+      <HomePageSchema />
       <Header />
       <AboutSection />
       <ProductsSection />
@@ -153,10 +158,11 @@ function App() {
   }, [location, i18n]);
 
   return (
-    <div className="min-h-screen bg-stone-50">
-      <ToastProvider>
-        <StagingBanner />
-        <CartProvider>
+    <HelmetProvider>
+      <div className="min-h-screen bg-stone-50">
+        <ToastProvider>
+          <StagingBanner />
+          <CartProvider>
           <StripeProvider>
             <ScrollToTop />
             {/* DIRECT BANNER: Show the simple banner only if not dismissed */}
@@ -290,9 +296,10 @@ function App() {
 
           {/* GDPR Cookie Consent */}
           <CookieConsent />
-        </CartProvider>
-      </ToastProvider>
-    </div>
+          </CartProvider>
+        </ToastProvider>
+      </div>
+    </HelmetProvider>
   );
 }
 
