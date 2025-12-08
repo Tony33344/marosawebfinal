@@ -52,8 +52,8 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlag[] = [
     name: 'UPN QR Code',
     description: 'Show UPN QR code for bank transfers',
     category: 'payment',
-    enabled: false,
-    defaultEnabled: false
+    enabled: true,
+    defaultEnabled: true
   },
 
   // Checkout Features
