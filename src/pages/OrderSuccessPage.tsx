@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabaseClient';
 import { CheckCircle, ArrowLeft, Printer, CreditCard, Truck, Mail, Copy, Check } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { decryptObject, isEncrypted } from '../utils/encryption';
+import { MarosaUPNQRCode } from '../components/payment/UPNQRCode';
 import { sendEmail as sendOrderConfirmationEmailViaService, sendOrderConfirmationEmail } from '../utils/emailService';
 
 interface OrderItem {
@@ -39,6 +40,8 @@ interface Order {
   gift_product_package_id?: string;
   gift_option_id?: string;
   gift_message?: string;
+  order_number?: string;
+  discount_amount?: number;
 }
 
 export const OrderSuccessPage: React.FC = () => {
@@ -590,6 +593,16 @@ export const OrderSuccessPage: React.FC = () => {
                   <p className="text-amber-700 text-sm">
                     <strong>{t('checkout.tip', 'Tip')}:</strong> {t('checkout.copyTip', 'Use the copy buttons to easily copy the payment details to your clipboard.')}
                   </p>
+                  
+                  {/* UPN QR Code for easy mobile banking */}
+                  <div className="mt-4">
+                    <MarosaUPNQRCode 
+                      amount={order.total_price} 
+                      orderId={generateSimpleReference(order)}
+                      purpose={t('checkout.upnPurpose', 'Naročilo Kmetija Maroša')}
+                    />
+                  </div>
+                  
                   <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
                     <div className="flex items-center">
                       <CheckCircle className="w-5 h-5 text-green-600 mr-2" />

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '../../lib/supabaseClient';
 import { Discount, DiscountType } from '../../utils/discountSystem';
 import DiscountBanner from '../../components/DiscountBanner';
+import AdminNavigation from '../../components/AdminNavigation';
 
 /**
  * Admin page for managing discounts
@@ -159,14 +160,17 @@ export const DiscountManager: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-6">{t('discounts.manager', 'Discount Manager')}</h1>
-        <div className="animate-pulse">
-          <div className="h-10 bg-gray-200 rounded w-1/4 mb-6"></div>
-          <div className="space-y-4">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-24 bg-gray-200 rounded"></div>
-            ))}
+      <div className="min-h-screen bg-gray-50">
+        <AdminNavigation />
+        <div className="p-6">
+          <h1 className="text-2xl font-bold mb-6">{t('discounts.manager', 'Discount Manager')}</h1>
+          <div className="animate-pulse">
+            <div className="h-10 bg-gray-200 rounded w-1/4 mb-6"></div>
+            <div className="space-y-4">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="h-24 bg-gray-200 rounded"></div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -174,8 +178,10 @@ export const DiscountManager: React.FC = () => {
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">{t('discounts.manager', 'Discount Manager')}</h1>
+    <div className="min-h-screen bg-gray-50">
+      <AdminNavigation />
+      <div className="p-6">
+        <h1 className="text-2xl font-bold mb-6">{t('discounts.manager', 'Discount Manager')}</h1>
       
       {error && (
         <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
@@ -449,6 +455,7 @@ export const DiscountManager: React.FC = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

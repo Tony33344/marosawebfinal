@@ -11,6 +11,7 @@ import { isAdminEmail } from '../config/adminConfig';
 import { Image } from '../components/Image';
 import { useProducts } from '../hooks/useProducts';
 import { parsePackageOptions } from '../utils/packageUtils';
+import AdminNavigation from '../components/AdminNavigation';
 
 export function AdminProductsPage() {
   const { t, i18n } = useTranslation();
@@ -163,6 +164,7 @@ export function AdminProductsPage() {
 
   return (
     <div className="admin-container">
+      <AdminNavigation />
       <div className="admin-header">
         <h1 className="admin-title">{t('admin.products.title')}</h1>
         <p className="admin-subtitle">{t('admin.products.manage')}</p>

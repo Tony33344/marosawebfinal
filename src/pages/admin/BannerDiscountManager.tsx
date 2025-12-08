@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '../../lib/supabaseClient';
 import { TimeLimitedDiscount } from '../../services/discountService';
 import { LimitedTimeOffer } from '../../components/LimitedTimeOffer';
+import AdminNavigation from '../../components/AdminNavigation';
 
 export function BannerDiscountManager() {
   const { t } = useTranslation();
@@ -209,8 +210,10 @@ export function BannerDiscountManager() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">{t('admin.discounts.bannerTitle', 'Banner Discount Manager')}</h1>
+    <div className="min-h-screen bg-gray-50">
+      <AdminNavigation />
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-2xl font-bold mb-6">{t('admin.discounts.bannerTitle', 'Banner Discount Manager')}</h1>
 
       {/* Error and success messages */}
       {error && (
@@ -569,6 +572,7 @@ export function BannerDiscountManager() {
             ))}
           </div>
         )}
+      </div>
       </div>
     </div>
   );
