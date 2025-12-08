@@ -289,6 +289,9 @@ export const slovenian = {
     quantityLabel: 'Količina',
     quantityAriaLabel: 'Količina za {{weight}}',
     quantityHint: 'Vnesite število med 1 in 99',
+    mainProductImage: 'Slika izdelka',
+    priceLabel: 'Cena',
+    viewLargerImage: 'Poglej večjo sliko',
     giftOption: {
       title: 'Pošlji kot darilo',
       description: 'Bi radi poslali ta izdelek kot darilo prijatelju? Obiščite našo stran za darila, kjer lahko izberete možnosti pakiranja in dodate osebno sporočilo.',
@@ -299,6 +302,7 @@ export const slovenian = {
       description: 'Za naročila ali poizvedbe nas kontaktirajte:'
     },
   },
+  productDetailBackButton: 'Nazaj na izdelke',
   cart: {
     title: 'Vaša nakupovalna košarica',
     empty: 'Vaša košarica je trenutno prazna.',
@@ -333,11 +337,18 @@ export const slovenian = {
     addedToCart: 'dodano v košarico',
     viewCart: 'Poglej košarico',
     item: 'izdelek',
-    items: 'izdelkov'
+    items: 'izdelkov',
+    // Missing translations
+    loading: 'Nalaganje košarice...',
+    removeAriaLabel: 'Odstrani izdelek iz košarice',
+    quantityAriaLabel: 'Količina izdelka',
+    orderSummary: 'Povzetek naročila',
+    freeShippingNote: 'Brezplačna dostava za naročila nad 30€'
   },
   checkout: {
     title: 'Blagajna',
     loading: 'Nalaganje blagajne...',
+    loadingProfile: 'Nalaganje profila...',
     subtotal: 'Vmesna vsota',
     discountLabel: 'Popust',
     shipping: 'Poštnina',
@@ -555,7 +566,57 @@ export const slovenian = {
     contactUs: 'Kontaktirajte nas',
     followUs: 'Sledite nam',
     copyright: '© {{year}} Kmetija Maroša. Vse pravice pridržane.',
-    privacyPolicy: 'Pravilnik o zasebnosti'
+    privacyPolicy: 'Pravilnik o zasebnosti',
+    language: 'Jezik'
+  },
+  gifts: {
+    title: 'Darilni paketi',
+    subtitle: 'Izberite popolno darilo za vaše najdražje',
+    description: 'Naši skrbno izbrani darilni paketi vsebujejo najboljše izdelke z naše kmetije.',
+    loading: 'Nalaganje darilnih paketov...',
+    select: 'Izberi paket',
+    howItWorks: 'Kako deluje?',
+    step1Title: 'Izberite paket',
+    step1Description: 'Izberite enega od naših darilnih paketov.',
+    step2Title: 'Prilagodite',
+    step2Description: 'Dodajte osebno sporočilo ali prilagodite vsebino.',
+    step3Title: 'Pošljite',
+    step3Description: 'Paket dostavimo neposredno na naslov prejemnika.',
+    faq: 'Pogosta vprašanja',
+    faq1Title: 'Kako dolgo traja dostava?',
+    faq1Answer: 'Dostava običajno traja 2-3 delovne dni.',
+    faq2Title: 'Ali lahko dodam osebno sporočilo?',
+    faq2Answer: 'Da, vsak darilni paket lahko opremite z osebnim sporočilom.',
+    faq3Title: 'Kakšna je embalaža?',
+    faq3Answer: 'Vsi paketi so lepo zapakirani v okolju prijazno embalažo.',
+    builder: {
+      addToCart: 'Dodaj paket v košarico',
+      added: 'Dodano v košarico!'
+    }
+  },
+  recipes: {
+    viewRecipe: 'Poglej recept',
+    title: 'Recepti',
+    allRecipes: 'Vsi recepti',
+    relatedRecipes: 'Sorodni recepti',
+    backToRecipes: 'Nazaj na recepte',
+    ingredients: 'Sestavine',
+    instructions: 'Navodila',
+    prepTime: 'Čas priprave',
+    cookTime: 'Čas kuhanja',
+    servings: 'Porcije',
+    minutes: 'minut'
+  },
+  error: {
+    title: 'Napaka',
+    productDetail: 'Izdelka ni bilo mogoče naložiti.',
+    backToHome: 'Nazaj na domačo stran',
+    general: 'Prišlo je do napake.',
+    notFound: 'Stran ni bila najdena.',
+    serverError: 'Napaka strežnika. Poskusite znova kasneje.',
+    somethingWentWrong: 'Prišlo je do napake',
+    unexpectedError: 'Prišla je do nepričakovane napake',
+    tryAgain: 'Poskusi znova'
   },
   location: {
     title: 'Kje smo',
@@ -844,11 +905,7 @@ export const slovenian = {
     passwordsDoNotMatch: 'Gesli se ne ujemata',
     passwordTooWeak: 'Geslo je prešibko'
   },
-  error: {
-    somethingWentWrong: 'Prišlo je do napake',
-    unexpectedError: 'Prišla je do nepričakovane napake',
-    tryAgain: 'Poskusi znova'
-  },
+  // error section moved to line 592
   staging: {
     banner: 'TESTNO OKOLJE - NI PRODUKCIJA'
   },

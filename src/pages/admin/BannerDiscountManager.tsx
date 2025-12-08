@@ -47,89 +47,18 @@ export function BannerDiscountManager() {
       setLoading(true);
       setError(null);
 
-      // Simulate fetching discount codes for development purposes
-      // This is a workaround for the permission issues with the users table
-      const sampleData = [
-        {
-          id: '0b54b8d3-fd8c-4854-82f6-dd33fe8df005',
-          code: 'DOBRODOSLI10',
-          description: 'Popust za nove stranke',
-          discount_type: 'percentage',
-          discount_value: 10,
-          min_order_amount: 0,
-          max_uses: 100,
-          current_uses: 0,
-          valid_from: new Date().toISOString().split('T')[0],
-          valid_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          category: null,
-          product_id: null,
-          // Banner-related fields
-          banner_text: 'Dobrodošli! Uporabite kodo DOBRODOSLI10 za 10% popusta na prvo naročilo!',
-          show_in_banner: true,
-          banner_start_time: new Date().toISOString().split('T')[0],
-          banner_end_time: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-        },
-        {
-          id: '0b1b22f4-e423-41bd-8f91-ac1e6399ebcd',
-          code: 'BREZPOSTNINE',
-          description: 'Brezplačna poštnina',
-          discount_type: 'fixed',
-          discount_value: 3.90,
-          min_order_amount: 20.00,
-          max_uses: null,
-          current_uses: 0,
-          valid_from: new Date().toISOString().split('T')[0],
-          valid_until: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          category: null,
-          product_id: null,
-          // Banner-related fields
-          banner_text: 'Use code BREZPOSTNINE for €3.90 off!',
-          show_in_banner: false,
-          banner_start_time: new Date().toISOString().split('T')[0],
-          banner_end_time: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-        },
-        {
-          id: '3ca2f8ee-358f-4a53-ab7c-ce7d5ed028a7',
-          code: 'POLETJE2023',
-          description: 'Poletna akcija',
-          discount_type: 'percentage',
-          discount_value: 15.00,
-          min_order_amount: 30.00,
-          max_uses: 50,
-          current_uses: 0,
-          valid_from: new Date().toISOString().split('T')[0],
-          valid_until: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          category: null,
-          product_id: null,
-          // Banner-related fields
-          banner_text: 'Use code POLETJE2023 for 15.00% off!',
-          show_in_banner: false,
-          banner_start_time: new Date().toISOString().split('T')[0],
-          banner_end_time: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-        }
-      ];
-
-      setDiscounts(sampleData);
-
-      /* Commented out due to permission issues with the users table
-      const { data, error } = await supabase
+      // Fetch discount codes from the database
+      const { data, error: fetchError } = await supabase
         .from('discount_codes')
         .select('*')
         .order('valid_until', { ascending: false });
 
-      if (error) throw error;
+      if (fetchError) {
+        console.error('Error fetching discounts:', fetchError);
+        throw fetchError;
+      }
 
       setDiscounts(data || []);
-      */
     } catch (err: any) {
       console.error('Error fetching discounts:', err);
       setError(t('admin.discounts.fetchError', 'Failed to load discounts'));
@@ -169,58 +98,31 @@ export function BannerDiscountManager() {
       setSuccess(null);
 
       if (formMode === 'create') {
-        // Simulate creating a new discount for development purposes
-        // This is a workaround for the permission issues with the users table
-        const fakeId = crypto.randomUUID();
-        const newDiscount = {
-          id: fakeId,
-          ...formData,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        };
-
-        setDiscounts([newDiscount, ...discounts]);
-        setSuccess(t('admin.discounts.createSuccess', 'Discount created successfully (simulated)'));
-
-        /* Commented out due to permission issues with the users table
-        // Create new discount
-        const { error } = await supabase
+        // Create new discount in database
+        const { error: insertError } = await supabase
           .from('discount_codes')
           .insert([formData]);
 
-        if (error) throw error;
+        if (insertError) throw insertError;
 
         setSuccess(t('admin.discounts.createSuccess', 'Discount created successfully'));
-        */
       } else if (formMode === 'edit' && editingDiscount) {
-        // Simulate updating an existing discount for development purposes
-        // This is a workaround for the permission issues with the users table
-        setDiscounts(discounts.map(discount =>
-          discount.id === editingDiscount.id
-            ? { ...discount, ...formData, updated_at: new Date().toISOString() }
-            : discount
-        ));
-        setSuccess(t('admin.discounts.updateSuccess', 'Discount updated successfully (simulated)'));
-
-        /* Commented out due to permission issues with the users table
-        // Update existing discount
-        const { error } = await supabase
+        // Update existing discount in database
+        const { error: updateError } = await supabase
           .from('discount_codes')
           .update(formData)
           .eq('id', editingDiscount.id);
 
-        if (error) throw error;
+        if (updateError) throw updateError;
 
         setSuccess(t('admin.discounts.updateSuccess', 'Discount updated successfully'));
-        */
       }
 
       // Reset form and fetch updated discounts
       setFormMode(null);
       setEditingDiscount(null);
       setFormData(initialFormState);
-      // Don't fetch discounts again since we're using simulated data
-      // fetchDiscounts();
+      fetchDiscounts();
     } catch (err: any) {
       console.error('Error saving discount:', err);
       setError(t('admin.discounts.saveError', 'Failed to save discount'));
@@ -265,22 +167,15 @@ export function BannerDiscountManager() {
       setError(null);
       setSuccess(null);
 
-      // Simulate deleting a discount for development purposes
-      // This is a workaround for the permission issues with the users table
-      setDiscounts(discounts.filter(discount => discount.id !== id));
-      setSuccess(t('admin.discounts.deleteSuccess', 'Discount deleted successfully (simulated)'));
-
-      /* Commented out due to permission issues with the users table
-      const { error } = await supabase
+      const { error: deleteError } = await supabase
         .from('discount_codes')
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (deleteError) throw deleteError;
 
       setSuccess(t('admin.discounts.deleteSuccess', 'Discount deleted successfully'));
       fetchDiscounts();
-      */
     } catch (err: any) {
       console.error('Error deleting discount:', err);
       setError(t('admin.discounts.deleteError', 'Failed to delete discount'));
@@ -296,26 +191,15 @@ export function BannerDiscountManager() {
       setError(null);
       setSuccess(null);
 
-      // Simulate toggling discount status for development purposes
-      // This is a workaround for the permission issues with the users table
-      setDiscounts(discounts.map(discount =>
-        discount.id === id
-          ? { ...discount, is_active: !currentStatus, updated_at: new Date().toISOString() }
-          : discount
-      ));
-      setSuccess(t('admin.discounts.statusUpdateSuccess', 'Discount status updated successfully (simulated)'));
-
-      /* Commented out due to permission issues with the users table
-      const { error } = await supabase
+      const { error: toggleError } = await supabase
         .from('discount_codes')
         .update({ is_active: !currentStatus })
         .eq('id', id);
 
-      if (error) throw error;
+      if (toggleError) throw toggleError;
 
       setSuccess(t('admin.discounts.statusUpdateSuccess', 'Discount status updated successfully'));
       fetchDiscounts();
-      */
     } catch (err: any) {
       console.error('Error updating discount status:', err);
       setError(t('admin.discounts.statusUpdateError', 'Failed to update discount status'));

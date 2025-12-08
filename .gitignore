@@ -31,3 +31,28 @@ dist-ssr
 # Local Netlify folder
 .netlify
 .env.staging
+
+# =============================================================================
+# Added by cleanup script - December 8, 2025
+# =============================================================================
+
+# Invoices and sensitive documents
+invoices_documents/
+
+# Test reports and artifacts
+tests/reports/html/
+tests/reports/*.json
+tests/reports/screenshots/
+
+# Workspace files
+*.code-workspace
+
+# Development test files
+*-test.js
+*-ghost-buyer.js
+*-pdf*.js
+
+# Log files
+*.log
+
+test-results/
