@@ -24,18 +24,18 @@ export function AdminSettingsPage() {
   // The component will only render if the user has admin access
 
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div className="min-h-screen bg-gray-50">
       {/* Analytics scheduler runs in the background */}
       <AnalyticsScheduler />
-      
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">{t('admin.settings.title', 'Admin Settings')}</h1>
-      <p className="text-gray-600 mb-6">
-        {t('admin.settings.description', 'Manage admin settings, marketing features, and user permissions')}
-      </p>
-      
+
       <AdminNavigation />
-      
-      <div className="mt-8 max-w-6xl mx-auto">
+
+      <div className="container mx-auto py-8 px-4 max-w-6xl">
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">{t('admin.settings.title', 'Admin Settings')}</h1>
+        <p className="text-gray-600 mb-6">
+          {t('admin.settings.description', 'Manage admin settings, marketing features, and user permissions')}
+        </p>
+
         <Tabs defaultValue="users" value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="mb-6 flex space-x-1 bg-gray-100 p-1 rounded-lg">
             <TabsTrigger value="users" className="flex-1 py-2 px-4 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm">

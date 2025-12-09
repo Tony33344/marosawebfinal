@@ -163,9 +163,10 @@ export function AdminProductsPage() {
   };
 
   return (
-    <div className="admin-container">
+    <div className="min-h-screen bg-gray-50">
       <AdminNavigation />
-      <div className="admin-header">
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        <div className="admin-header">
         <h1 className="admin-title">{t('admin.products.title')}</h1>
         <p className="admin-subtitle">{t('admin.products.manage')}</p>
       </div>
@@ -386,6 +387,7 @@ export function AdminProductsPage() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

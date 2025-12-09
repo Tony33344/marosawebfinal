@@ -60,7 +60,7 @@ import { DirectEmailTestPage } from './pages/DirectEmailTestPage';
 import { PopupDebugPage } from './pages/PopupDebugPage';
 import TranslationStatus from './components/dev/TranslationStatus';
 import TranslationDebug from './components/dev/TranslationDebug';
-const TranslationManager = lazy(() => import('./components/admin/TranslationManager'));
+const TranslationsAdminPage = lazy(() => import('./pages/admin/TranslationsAdminPage'));
 import { TestToastNotification } from './pages/TestToastNotification';
 import { TestStickyNotification } from './pages/TestStickyNotification';
 import { CookieConsent } from './components/CookieConsent';
@@ -219,7 +219,7 @@ function App() {
               <Route path="/admin/translations" element={
                 <SecureAdminRoute>
                   <Suspense fallback={<PageLoadingSpinner />}>
-                    <TranslationManager />
+                    <TranslationsAdminPage />
                   </Suspense>
                 </SecureAdminRoute>
               } />
