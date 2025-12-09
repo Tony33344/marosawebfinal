@@ -65,7 +65,7 @@ const mediaItems: MediaItem[] = [
     date: "28.1.2025",
     source: "YouTube",
     link: "https://www.youtube.com/watch?v=gWpyYZE1ISk",
-    image: "https://i.ibb.co/Y780K89F/agri.png",
+    image: "https://wiwjkholoebkzzjoczjn.supabase.co/storage/v1/object/public/marosaimages/images/video/ZELENASKP.png",
     excerpt: "Video predstavitev naše ekološke pridelave in predelave.",
     type: "video"
   },
@@ -74,7 +74,7 @@ const mediaItems: MediaItem[] = [
     date: "21.8.2024",
     source: "YouTube",
     link: "https://www.youtube.com/watch?v=QRtKEiiaLOA",
-    image: "https://img.youtube.com/vi/QRtKEiiaLOA/maxresdefault.jpg",
+    image: "https://wiwjkholoebkzzjoczjn.supabase.co/storage/v1/object/public/marosaimages/images/video/AgriFuture.png",
     excerpt: "Poglobljen pogled v našo tradicijo ekološkega kmetovanja in vizijo za prihodnost.",
     type: "video"
   }
@@ -173,7 +173,7 @@ export function AboutPage() {
                       {item.image && (
                         <div className="md:w-1/3">
                           <Image
-                            src={item.image}
+                            src={item.image || '/images/placeholder.svg'}
                             alt={item.title}
                             className="w-full h-64 object-cover"
                           />
@@ -218,7 +218,7 @@ export function AboutPage() {
                   <article key={index} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
                     <div className="aspect-video relative">
                       <Image
-                        src={item.image}
+                        src={item.image || '/images/placeholder.svg'}
                         alt={item.title}
                         className="w-full h-full object-cover"
                       />

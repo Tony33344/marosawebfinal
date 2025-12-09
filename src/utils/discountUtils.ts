@@ -95,18 +95,32 @@ export async function validateDiscountCode(code: string, orderTotal: number): Pr
       };
     }
 
-    // Calculate discount amount
+    // Calculate discount amount with robust number parsing to avoid NaN
     let discountAmount = 0;
+
+    // Normalize discount_value to a usable number
+    const rawValue = data.discount_value;
+    const parsedValue = typeof rawValue === 'number'
+      ? rawValue
+      : parseFloat(String(rawValue).replace('%', '').replace(',', '.'));
+
+    const value = Number.isFinite(parsedValue) ? parsedValue : 0;
+
     if (data.discount_type === 'percentage') {
-      discountAmount = (orderTotal * data.discount_value) / 100;
+      discountAmount = (orderTotal * value) / 100;
     } else if (data.discount_type === 'fixed') {
-      discountAmount = data.discount_value;
+      discountAmount = value;
+    }
+
+    // Final safety: ensure we never propagate NaN or negative discounts
+    if (!Number.isFinite(discountAmount) || discountAmount < 0) {
+      discountAmount = 0;
     }
 
     return {
       valid: true,
       discountAmount,
-      discountPercent: data.discount_type === 'percentage' ? data.discount_value : 0,
+      discountPercent: data.discount_type === 'percentage' ? value : 0,
       discountData: data
     };
   } catch (err) {

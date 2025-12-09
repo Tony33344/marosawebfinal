@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useTranslation } from 'react-i18next';
-import { useFeatureFlag } from '../../hooks/useFeatureFlag';
 import { Download, Copy, Check } from 'lucide-react';
 
 interface UPNQRCodeProps {
@@ -43,7 +42,9 @@ export const UPNQRCode: React.FC<UPNQRCodeProps> = ({
   showDetails = true
 }) => {
   const { t } = useTranslation();
-  const enabled = useFeatureFlag('upn_qr_code');
+  // Temporarily disable feature flag check for debugging
+  // const enabled = useFeatureFlag('upn_qr_code');
+  const enabled = true;
   const [copied, setCopied] = React.useState(false);
 
   // Generate UPN QR code data string

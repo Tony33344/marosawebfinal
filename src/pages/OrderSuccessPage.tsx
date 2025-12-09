@@ -6,7 +6,7 @@ import { CheckCircle, ArrowLeft, Printer, CreditCard, Truck, Mail, Copy, Check }
 import { useCart } from '../context/CartContext';
 import { decryptObject, isEncrypted } from '../utils/encryption';
 import { MarosaUPNQRCode } from '../components/payment/UPNQRCode';
-import { sendEmail as sendOrderConfirmationEmailViaService, sendOrderConfirmationEmail } from '../utils/emailService';
+import { sendOrderConfirmationEmail } from '../utils/emailService';
 
 interface OrderItem {
   product_id: string;
@@ -60,13 +60,6 @@ export const OrderSuccessPage: React.FC = () => {
   const orderId = searchParams.get('order_id');
   const paymentId = searchParams.get('payment_id');
 
-  // Debug log to see what parameters we're getting
-  console.log('OrderSuccessPage - URL parameters:', {
-    search: location.search,
-    orderId,
-    paymentId
-  });
-
   // Handle payment ID from Stripe
   useEffect(() => {
     // If we have a payment ID but no order ID, create a temporary order
@@ -109,7 +102,6 @@ export const OrderSuccessPage: React.FC = () => {
           if (shippingAddressStr) {
             try {
               shippingAddress = JSON.parse(shippingAddressStr);
-              console.log('Retrieved shipping address from session storage:', shippingAddress);
             } catch (parseError) {
               console.error('Error parsing shipping address:', parseError);
             }
@@ -169,8 +161,6 @@ export const OrderSuccessPage: React.FC = () => {
     }
 
     const fetchOrderDetails = async () => {
-      console.log('fetchOrderDetails called with:', { orderId, paymentId });
-
       if (!orderId && !paymentId) {
         console.error('No order ID or payment ID found in URL');
         setError(t('orders.notFound', 'Order not found'));
@@ -186,14 +176,11 @@ export const OrderSuccessPage: React.FC = () => {
 
       try {
         setLoading(true);
-        console.log('Fetching order from Supabase with ID:', orderId);
         const { data, error: fetchError } = await supabase
           .from('orders')
           .select('*')
           .eq('id', orderId)
           .single();
-
-        console.log('Supabase response:', { data, error: fetchError });
 
         if (fetchError) {
           console.error('Error fetching order:', fetchError);
@@ -228,7 +215,6 @@ export const OrderSuccessPage: React.FC = () => {
             );
 
             if (hasEncryptedFields) {
-              console.log('Decrypting shipping address fields...');
               parsedOrder.shipping_address = await decryptObject(
                 parsedOrder.shipping_address,
                 fieldsToDecrypt
@@ -316,7 +302,6 @@ export const OrderSuccessPage: React.FC = () => {
               ...order.shipping_address,
               ...storedAddress
             };
-            console.log('Updated order shipping address from session storage:', order.shipping_address);
           } catch (error) {
             console.error('Error parsing shipping address from session storage:', error);
           }
@@ -329,7 +314,6 @@ export const OrderSuccessPage: React.FC = () => {
         const sendStripePaymentEmail = async () => {
           try {
             setSendingEmail(true);
-            console.log('Sending email for Stripe payment to:', order.shipping_address.email);
 
             // Format order items for email
             const emailOrderItems = order.items && Array.isArray(order.items)
@@ -355,9 +339,7 @@ export const OrderSuccessPage: React.FC = () => {
               }
             );
 
-            if (emailResult.success) {
-              console.log('Stripe payment confirmation email sent successfully');
-            } else {
+            if (!emailResult.success) {
               console.error('Failed to send Stripe payment confirmation email:', emailResult.message);
             }
 
@@ -373,7 +355,6 @@ export const OrderSuccessPage: React.FC = () => {
       } else {
         // For non-Stripe orders, just mark as sent since the email was already sent
         setEmailSent(true);
-        console.log('Email already sent from MultiStepCheckoutPage for regular order');
       }
     }
   }, [order, emailSent, sendingEmail]);

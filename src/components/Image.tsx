@@ -103,7 +103,7 @@ export function Image({
       onError={handleError}
       onLoad={handleLoad}
       decoding={decoding}
-      fetchPriority={fetchPriority}
+      {...(fetchPriority ? { fetchpriority: fetchPriority } : {})}
       sizes={sizes}
       srcSet={srcSet}
       role={isDecorative ? 'presentation' : role}

@@ -55,7 +55,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Special handling for known admin emails - always grant admin status
     const knownAdminEmails = ['nakupi@si.si']; // Add any other known admin emails here
     if (knownAdminEmails.includes(session.user.email || '')) {
-      console.log('User is a known admin, setting admin status to true');
       setIsAdmin(true);
 
       // Cache the admin status
@@ -79,7 +78,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         if (isWithin24Hours) {
           const isAdmin = cachedAdminStatus === 'true';
-          console.log('Using cached admin status for:', session.user.email, 'Status:', isAdmin);
           setIsAdmin(isAdmin);
           return isAdmin;
         }
@@ -87,7 +85,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       // If no valid cache, check admin status using the client-side utility
       const isUserAdmin = await isAdminUser(session.user);
-      console.log('Checking admin role for:', session.user.email, 'Result:', isUserAdmin);
 
       // If the user is already determined to be an admin by client-side check,
       // store the result and return
@@ -118,13 +115,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Skip edge function call if we have a negative result cached and it's still valid
       if (negativeResultCached && edgeCheckTimestamp &&
           (now - parseInt(edgeCheckTimestamp, 10) <= EDGE_FUNCTION_CACHE_DURATION)) {
-        console.log('Using cached negative admin status from edge function for:', session.user.email);
         return false;
       }
 
       if (shouldCheckEdgeFunction) {
         try {
-          console.log('Calling edge function to check admin status for:', session.user.email);
           const { data, error } = await supabase.functions.invoke('check-admin-role', {
             method: 'POST',
           });

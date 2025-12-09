@@ -1,110 +1,177 @@
-# Kmetija Marosa Web Application
+# Supabase CLI
 
-A web application for Kmetija Marosa, a farm products e-commerce site.
+[![Coverage Status](https://coveralls.io/repos/github/supabase/cli/badge.svg?branch=main)](https://coveralls.io/github/supabase/cli?branch=main) [![Bitbucket Pipelines](https://img.shields.io/bitbucket/pipelines/supabase-cli/setup-cli/master?style=flat-square&label=Bitbucket%20Canary)](https://bitbucket.org/supabase-cli/setup-cli/pipelines) [![Gitlab Pipeline Status](https://img.shields.io/gitlab/pipeline-status/sweatybridge%2Fsetup-cli?label=Gitlab%20Canary)
+](https://gitlab.com/sweatybridge/setup-cli/-/pipelines)
 
-## Security Features
+[Supabase](https://supabase.io) is an open source Firebase alternative. We're building the features of Firebase using enterprise-grade open source tools.
 
-This application includes several security features to protect user data and prevent unauthorized access:
+This repository contains all the functionality for Supabase CLI.
 
-### Environment Variable Security
+- [x] Running Supabase locally
+- [x] Managing database migrations
+- [x] Creating and deploying Supabase Functions
+- [x] Generating types directly from your database schema
+- [x] Making authenticated HTTP requests to [Management API](https://supabase.com/docs/reference/api/introduction)
 
-- Sensitive variables are never exposed in the frontend
-- Clear separation between client-safe and sensitive variables
-- Deployment script includes checks to prevent accidental exposure of sensitive data
+## Getting started
 
-### Server-Side Admin Role Checking
+### Install the CLI
 
-- Admin roles are verified on the server side using Supabase Edge Functions
-- Client-side fallback for admin checking during development
-- Protection against unauthorized access to admin features
+Available via [NPM](https://www.npmjs.com) as dev dependency. To install:
 
-### Enhanced Password Security
+```bash
+npm i supabase --save-dev
+```
 
-- Strong password requirements and validation
-- Password strength meter during registration
-- Protection against sensitive data in password fields
-- Secure password change functionality
+When installing with yarn 4, you need to disable experimental fetch with the following nodejs config.
 
-### Content Security Policy
+```
+NODE_OPTIONS=--no-experimental-fetch yarn add supabase
+```
 
-- Strict CSP to prevent XSS attacks
-- Resource loading restricted to trusted domains
-- Protection against data exfiltration
-- Additional security headers for comprehensive protection
+> **Note**
+For Bun versions below v1.0.17, you must add `supabase` as a [trusted dependency](https://bun.sh/guides/install/trusted) before running `bun add -D supabase`.
 
-### Client-Side Encryption
+<details>
+  <summary><b>macOS</b></summary>
 
-- Enhanced encryption for sensitive data
-- PBKDF2-based key derivation with high iteration count
-- Versioned encryption format for future upgrades
-- Backward compatibility with legacy encrypted data
+  Available via [Homebrew](https://brew.sh). To install:
 
-## Getting Started
+  ```sh
+  brew install supabase/tap/supabase
+  ```
 
-### Prerequisites
+  To install the beta release channel:
+  
+  ```sh
+  brew install supabase/tap/supabase-beta
+  brew link --overwrite supabase-beta
+  ```
+  
+  To upgrade:
 
-- Node.js (v16 or higher)
-- npm (v7 or higher)
-- Supabase account
-- Stripe account
+  ```sh
+  brew upgrade supabase
+  ```
+</details>
 
-### Installation
+<details>
+  <summary><b>Windows</b></summary>
 
-1. Clone the repository
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Create a `.env.local` file based on `.env.example`
-4. Start the development server:
-   ```bash
-   npm run dev
-   ```
+  Available via [Scoop](https://scoop.sh). To install:
 
-### Deployment
+  ```powershell
+  scoop bucket add supabase https://github.com/supabase/scoop-bucket.git
+  scoop install supabase
+  ```
 
-See the [Deployment Guide](DEPLOYMENT_GUIDE.md) for detailed instructions on deploying the application.
+  To upgrade:
 
-#### Netlify Deployment
+  ```powershell
+  scoop update supabase
+  ```
+</details>
 
-The application is deployed to Netlify under the name 'marosatest1'. The deployment process includes:
+<details>
+  <summary><b>Linux</b></summary>
 
-- Automatic builds from the GitHub repository
-- Environment variable configuration for Supabase and Stripe
-- Custom domain configuration
-- Continuous deployment with preview builds for pull requests
-- Automatic SSL certificate provisioning
-- Performance optimization with asset compression
+  Available via [Homebrew](https://brew.sh) and Linux packages.
 
-### Security Checklist
+  #### via Homebrew
 
-Use the [Security Checklist](SECURITY_CHECKLIST.md) to verify that all security features are properly implemented.
+  To install:
 
-## Features
+  ```sh
+  brew install supabase/tap/supabase
+  ```
 
-### E-commerce Functionality
+  To upgrade:
 
-- Product catalog with categories and filtering
-- Shopping cart with persistent storage
-- Secure checkout process with multiple payment options
-- Order history and tracking
-- User account management
+  ```sh
+  brew upgrade supabase
+  ```
 
-### Gift Feature (Darilo)
+  #### via Linux packages
 
-- Dedicated gift product page for selecting gift packages
-- Gift builder for customizing gifts with multiple products
-- Gift recipient information and delivery address management
-- Gift options in checkout process
-- Gift order tracking and display in order history
+  Linux packages are provided in [Releases](https://github.com/supabase/cli/releases). To install, download the `.apk`/`.deb`/`.rpm`/`.pkg.tar.zst` file depending on your package manager and run the respective commands.
 
-## Documentation
+  ```sh
+  sudo apk add --allow-untrusted <...>.apk
+  ```
 
-- [Security Documentation](SECURITY.md)
-- [Deployment Guide](DEPLOYMENT_GUIDE.md)
-- [Security Checklist](SECURITY_CHECKLIST.md)
-- [Gift Feature Updates](gift_feature_updates.md)
+  ```sh
+  sudo dpkg -i <...>.deb
+  ```
 
-## License
+  ```sh
+  sudo rpm -i <...>.rpm
+  ```
 
-This project is proprietary and confidential. Unauthorized copying, distribution, or use is strictly prohibited.
+  ```sh
+  sudo pacman -U <...>.pkg.tar.zst
+  ```
+</details>
+
+<details>
+  <summary><b>Other Platforms</b></summary>
+
+  You can also install the CLI via [go modules](https://go.dev/ref/mod#go-install) without the help of package managers.
+
+  ```sh
+  go install github.com/supabase/cli@latest
+  ```
+
+  Add a symlink to the binary in `$PATH` for easier access:
+
+  ```sh
+  ln -s "$(go env GOPATH)/bin/cli" /usr/bin/supabase
+  ```
+
+  This works on other non-standard Linux distros.
+</details>
+
+<details>
+  <summary><b>Community Maintained Packages</b></summary>
+
+  Available via [pkgx](https://pkgx.sh/). Package script [here](https://github.com/pkgxdev/pantry/blob/main/projects/supabase.com/cli/package.yml).
+  To install in your working directory:
+
+  ```bash
+  pkgx install supabase
+  ```
+
+  Available via [Nixpkgs](https://nixos.org/). Package script [here](https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/tools/supabase-cli/default.nix).
+</details>
+
+### Run the CLI
+
+```bash
+supabase bootstrap
+```
+
+Or using npx:
+
+```bash
+npx supabase bootstrap
+```
+
+The bootstrap command will guide you through the process of setting up a Supabase project using one of the [starter](https://github.com/supabase-community/supabase-samples/blob/main/samples.json) templates.
+
+## Docs
+
+Command & config reference can be found [here](https://supabase.com/docs/reference/cli/about).
+
+## Breaking changes
+
+We follow semantic versioning for changes that directly impact CLI commands, flags, and configurations.
+
+However, due to dependencies on other service images, we cannot guarantee that schema migrations, seed.sql, and generated types will always work for the same CLI major version. If you need such guarantees, we encourage you to pin a specific version of CLI in package.json.
+
+## Developing
+
+To run from source:
+
+```sh
+# Go >= 1.22
+go run . help
+```

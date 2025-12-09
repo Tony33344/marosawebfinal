@@ -650,9 +650,21 @@ export const slovenian = {
     }
   },
   recipes: {
+    // Button / card texts
     viewRecipe: 'Poglej recept',
+
+    // Page titles and meta
     title: 'Recepti',
+    pageTitle: 'Recepti',
+    pageDescription:
+      'Odkrijte okusne recepte z našimi izdelki. Od tradicionalnih slovenskih jedi do sodobnih kreacij – poiščite navdih za vaš naslednji obrok.',
+
+    // Listing and filters
     allRecipes: 'Vsi recepti',
+    filterByProduct: 'Filtriraj po izdelku',
+    noRecipesFound: 'Za izbrani izdelek ni najdenih receptov.',
+
+    // Details / related
     relatedRecipes: 'Sorodni recepti',
     backToRecipes: 'Nazaj na recepte',
     ingredients: 'Sestavine',

@@ -593,17 +593,21 @@ export const CheckoutPage: React.FC = () => {
     if (!appliedDiscount) return 0;
 
     // Use the calculated discount from the validation
-    if (appliedDiscount.calculatedDiscount) {
-      return appliedDiscount.calculatedDiscount;
+    if (appliedDiscount.calculatedDiscount !== undefined) {
+      const numeric = Number(appliedDiscount.calculatedDiscount);
+      return Number.isFinite(numeric) && numeric >= 0 ? numeric : 0;
     }
 
     // Fallback calculation using new schema fields
     if (appliedDiscount.discount_type === 'percentage') {
-      return (subtotal * appliedDiscount.discount_value) / 100;
+      const value = Number(appliedDiscount.discount_value);
+      if (!Number.isFinite(value)) return 0;
+      return (subtotal * value) / 100;
     }
 
     if (appliedDiscount.discount_type === 'fixed') {
-      return appliedDiscount.discount_value;
+      const value = Number(appliedDiscount.discount_value);
+      return Number.isFinite(value) && value >= 0 ? value : 0;
     }
 
     return 0;
