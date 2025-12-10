@@ -458,12 +458,27 @@ export function ProductDetail() {
         }
 
         if (data && data.length > 0) {
-          setAllProducts(data);
           const currentId = id ? parseInt(id, 10) : -1;
-          const currentIndex = data.findIndex(p => p.id === currentId);
-          
-          setPrevProduct(currentIndex > 0 ? data[currentIndex - 1] : null);
-          setNextProduct(currentIndex >= 0 && currentIndex < data.length - 1 ? data[currentIndex + 1] : null);
+          const currentIndex = data.findIndex(p => {
+            const productId = typeof p.id === 'string' ? parseInt(p.id, 10) : p.id;
+            return productId === currentId;
+          });
+
+          if (currentIndex === -1) {
+            // If current product is not found in the list, do not show prev/next navigation
+            setPrevProduct(null);
+            setNextProduct(null);
+            return;
+          }
+
+          const lastIndex = data.length - 1;
+
+          // Wrap-around navigation: first product's "previous" is last, last product's "next" is first
+          const prevIndex = currentIndex === 0 ? lastIndex : currentIndex - 1;
+          const nextIndex = currentIndex === lastIndex ? 0 : currentIndex + 1;
+
+          setPrevProduct(data[prevIndex]);
+          setNextProduct(data[nextIndex]);
         }
       } catch (err) {
         console.error('Error in product navigation:', err);
@@ -552,6 +567,15 @@ export function ProductDetail() {
     i18n.language === 'hr' ? (product.description_hr || product.description) :
     product.description; // Default fallback
 
+  // Determine main image URL with product-specific overrides
+  const numericProductIdForMain = typeof product.id === 'string' ? parseInt(product.id, 10) : product.id;
+  let mainImageUrl = product.image_url ? getImageUrl(product.image_url) : '';
+
+  // For Melisa (product id 5), always use a reliable Supabase image if no primary image is set
+  if ((!mainImageUrl || mainImageUrl.includes('placeholder-product')) && numericProductIdForMain === 5) {
+    mainImageUrl = getImageUrl('https://wiwjkholoebkzzjoczjn.supabase.co/storage/v1/object/public/marosaimages/images/melisa/melisa1.jpeg');
+  }
+
   // Track image view
   const handleImageView = (imageUrl: string) => {
     trackEvent({
@@ -608,7 +632,7 @@ export function ProductDetail() {
                     title={prevProduct.name}
                   >
                     <ArrowLeft className="w-4 h-4 mr-1" />
-                    <span className="hidden sm:inline">{t('productDetail.prevProduct', 'Prejšnji')}</span>
+                    <span>{t('productDetail.prevProduct', 'Prejšnji')}</span>
                   </Link>
                 )}
                 {nextProduct && (
@@ -617,7 +641,7 @@ export function ProductDetail() {
                     className="inline-flex items-center text-brown-600 hover:text-brown-700 transition-colors font-medium"
                     title={nextProduct.name}
                   >
-                    <span className="hidden sm:inline">{t('productDetail.nextProduct', 'Naslednji izdelek')}</span>
+                    <span>{t('productDetail.nextProduct', 'Naslednji izdelek')}</span>
                     <ArrowRight className="w-4 h-4 ml-1" />
                   </Link>
                 )}
@@ -628,13 +652,13 @@ export function ProductDetail() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 mb-12">
               {/* Image Column */}
               <div className="sticky top-0 md:static md:top-auto">
-                <div className="bg-white rounded-lg p-2 md:p-0 shadow-sm md:shadow-none">
+                <div className="rounded-lg">
                   <Image
-                    src={product.image_url || ''}
+                    src={mainImageUrl || ''}
                     alt={translatedName}
                     fallbackSrc="/images/placeholder-product.svg"
-                    className="w-full rounded-lg shadow-lg cursor-pointer hover:opacity-90 transition-opacity object-contain aspect-square bg-white"
-                    onClick={() => product.image_url && handleImageView(getImageUrl(product.image_url))}
+                    className="w-full rounded-lg cursor-pointer hover:opacity-90 transition-opacity object-contain aspect-square"
+                    onClick={() => mainImageUrl && handleImageView(mainImageUrl)}
                     width={500}
                     height={500}
                     loading="eager"
@@ -826,7 +850,7 @@ export function ProductDetail() {
           {/* Image Modal */}
           {selectedImage && (
             <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center p-4">
-              <div className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden">
+              <div className="relative w-full max-w-5xl max-h-[90vh]">
                 {/* Close button */}
                 <button
                   onClick={() => setSelectedImage(null)}
@@ -838,17 +862,15 @@ export function ProductDetail() {
                   </svg>
                 </button>
 
-                {/* Image */}
-                <div className="bg-white rounded-lg overflow-hidden shadow-2xl">
-                  <Image
-                    src={selectedImage || ''}
-                    alt={translatedName}
-                    fallbackSrc="/images/placeholder.svg"
-                    className="w-full h-auto max-h-[85vh] object-contain"
-                    width={1000}
-                    height={1000}
-                  />
-                </div>
+                {/* Image - edge-to-edge inside the dark overlay */}
+                <Image
+                  src={selectedImage || ''}
+                  alt={translatedName}
+                  fallbackSrc="/images/placeholder.svg"
+                  className="w-full h-auto max-h-[85vh] object-contain"
+                  width={1000}
+                  height={1000}
+                />
               </div>
             </div>
           )}

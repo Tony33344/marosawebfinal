@@ -332,14 +332,17 @@ export async function validateImageUrl(url: string): Promise<boolean> {
       img.crossOrigin = 'anonymous';
       img.src = url;
 
-      // Set a timeout to avoid hanging if the image takes too long to load
+      // Set a timeout to avoid hanging if the image takes too long to load.
+      // On timeout we no longer mark the image as invalid; we just log a warning
+      // and resolve true so we don't aggressively fall back to placeholders
+      // for slow Supabase/remote images.
       setTimeout(() => {
         if (!img.complete) {
-          console.warn(`Image load timeout: ${url}`);
-          sessionStorage.setItem(cacheKey, 'false');
-          resolve(false);
+          console.warn(`Image load timeout (treating as potentially valid): ${url}`);
+          // Do NOT cache as invalid; just resolve true so callers don't force a placeholder.
+          resolve(true);
         }
-      }, 5000); // 5 second timeout
+      }, 10000); // 10 second timeout
     });
   } catch (error) {
     console.error('Error validating image URL:', url, error);
