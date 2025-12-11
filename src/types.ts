@@ -53,6 +53,7 @@ export interface GiftItem {
   gift_products: GiftProductItem[];
   recipient_name?: string;
   recipient_message?: string;
+  has_message_fee?: boolean;
 }
 
 export interface Recipe {

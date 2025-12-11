@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate } from 'react-router-dom'; // Import useNavigate
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
-import { Product, PackageOption, GiftItem } from '../types';
+import { Product, PackageOption } from '../types';
 import { Trash2, Gift } from 'lucide-react';
 import { ShippingCostNotification } from './ShippingCostNotification';
 import { getImageUrl } from '../utils/imageUtils';
@@ -102,9 +102,13 @@ export const Cart: React.FC = () => {
       return total + price * item.quantity;
     }, 0);
 
-    // Calculate subtotal for gift items
+    // Calculate subtotal for gift items (including message fees)
     const giftsSubtotal = gifts.reduce((total, gift) => {
-      return total + gift.price * gift.quantity;
+      let giftTotal = gift.price;
+      if (gift.has_message_fee) {
+        giftTotal += 3.00; // Add message fee
+      }
+      return total + giftTotal * gift.quantity;
     }, 0);
 
     return cartSubtotal + giftsSubtotal;
@@ -122,12 +126,6 @@ export const Cart: React.FC = () => {
 
   // Calculate total with shipping
   const total = subtotal + shippingCost;
-
-  const getTranslatedOptionDescription = (option: PackageOption) => {
-    const key = `packageOption.${option.description?.toLowerCase().replace(/\s+/g, '_')}`;
-    const fallback = option.description || '';
-    return t(key, fallback);
-  };
 
   const handleCheckout = () => {
     navigate(`/checkout-steps?lang=${i18n.language}`); // Navigate to multi-step checkout page
@@ -167,7 +165,7 @@ export const Cart: React.FC = () => {
             {/* Regular Cart Items */}
             {cartItemsDetails.map((item) => {
               const itemTotal = (item.packageOption?.price ?? 0) * item.quantity;
-              const translatedName = item[`name_${i18n.language}` as keyof Product] || item.name;
+              const translatedName = String(item[`name_${i18n.language}` as keyof Product] || item.name);
 
               return (
                 <div key={`${item.id}-${item.packageOption.uniq_id}`} className="border-b p-3 sm:p-4">
@@ -184,8 +182,7 @@ export const Cart: React.FC = () => {
                           {translatedName}
                         </Link>
                         <p className="text-sm text-gray-500 mb-2">
-                          {item.packageOption.weight}
-                          {item.packageOption.description ? ` (${getTranslatedOptionDescription(item.packageOption)})` : ''}
+                          {item.packageOption?.weight || ''}
                         </p>
                         <div className="flex items-center justify-between">
                           <div className="text-sm">
@@ -235,8 +232,7 @@ export const Cart: React.FC = () => {
                           {translatedName}
                         </Link>
                         <p className="text-sm text-gray-500">
-                          {item.packageOption.weight}
-                          {item.packageOption.description ? ` (${getTranslatedOptionDescription(item.packageOption)})` : ''}
+                          {item.packageOption?.weight || ''}
                         </p>
                       </div>
                     </div>
@@ -415,6 +411,14 @@ export const Cart: React.FC = () => {
                     <span className="text-gray-600">{t('cart.subtotal', 'Vmesni seštevek')}:</span>
                     <span className="font-medium">{subtotal.toFixed(2)} €</span>
                   </div>
+
+                  {/* Show message fee breakdown for gifts */}
+                  {gifts.filter(gift => gift.has_message_fee).map(gift => (
+                    <div key={gift.id} className="flex justify-between text-sm sm:text-base text-amber-600">
+                      <span>{t('cart.messageFee', 'Osebno sporočilo')} ({gift.name}):</span>
+                      <span>+3,00 €</span>
+                    </div>
+                  ))}
 
                   <div className="flex justify-between text-sm sm:text-base">
                     <span className="text-gray-600">{t('cart.shipping', 'Dostava')}:</span>

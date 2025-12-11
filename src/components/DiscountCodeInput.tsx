@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Ticket, Check, X, AlertCircle } from 'lucide-react';
 import { validateDiscountCode } from '../utils/discountUtils';
@@ -19,17 +19,28 @@ interface DiscountCode {
 }
 
 interface DiscountCodeInputProps {
-  orderTotal: number;
+  orderTotal?: number;
+  subtotal?: number; // Alias for orderTotal - some pages use this prop name
   onApply: (discountCode: DiscountCode | null) => void;
   onDiscountChange?: (discountAmount: number) => void;
+  currentDiscount?: DiscountCode | null; // For controlled component usage
 }
 
-export function DiscountCodeInput({ orderTotal, onApply, onDiscountChange }: DiscountCodeInputProps) {
-  const { t, i18n } = useTranslation();
+export function DiscountCodeInput({ orderTotal, subtotal, onApply, onDiscountChange, currentDiscount }: DiscountCodeInputProps) {
+  // Support both orderTotal and subtotal prop names
+  const total = orderTotal ?? subtotal ?? 0;
+  const { t } = useTranslation();
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [appliedCode, setAppliedCode] = useState<DiscountCode | null>(null);
+  const [appliedCode, setAppliedCode] = useState<DiscountCode | null>(currentDiscount ?? null);
+
+  // Sync with external currentDiscount prop if provided
+  useEffect(() => {
+    if (currentDiscount !== undefined) {
+      setAppliedCode(currentDiscount);
+    }
+  }, [currentDiscount]);
 
   const handleApplyCode = async () => {
     if (!code.trim()) {
@@ -42,7 +53,7 @@ export function DiscountCodeInput({ orderTotal, onApply, onDiscountChange }: Dis
       setError(null);
 
       // Use the validation function from discountUtils
-      const result = await validateDiscountCode(code.trim().toUpperCase(), orderTotal);
+      const result = await validateDiscountCode(code.trim().toUpperCase(), total);
 
       if (!result.valid) {
         // Map the generic error messages to translated ones

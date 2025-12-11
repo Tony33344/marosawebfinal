@@ -130,9 +130,10 @@ export function DariloProductPage() {
   };
 
   const handleSelectGiftPackage = (giftPackageId: number) => {
-    // In a real implementation, this would navigate to the gift builder page
-    // with the selected package ID
-    navigate(`/darilo/builder/${giftPackageId}`);
+    // Route preset packages (IDs 4-9) to preset page, others to builder
+    const isPresetPackage = giftPackageId >= 4 && giftPackageId <= 9;
+    const route = isPresetPackage ? 'preset' : 'builder';
+    navigate(`/darilo/${route}/${giftPackageId}`);
   };
 
   if (loading) {

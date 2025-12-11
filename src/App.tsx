@@ -25,6 +25,7 @@ import { ModularCheckoutPage2 } from './pages/ModularCheckoutPage2';
 import { MultiStepCheckoutPage } from './pages/MultiStepCheckoutPage';
 import { DariloProductPage } from './pages/DariloProductPage';
 import { GiftBuilderPage } from './pages/GiftBuilderPage';
+import { PresetGiftPage } from './pages/PresetGiftPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { ChangePasswordPage } from './pages/ChangePasswordPage';
 import { OrdersPage } from './pages/OrdersPage';
@@ -182,6 +183,7 @@ function App() {
               <Route path="/checkout-steps" element={<MultiStepCheckoutPage />} />
               <Route path="/darilo" element={<DariloProductPage />} />
               <Route path="/darilo/builder/:packageId" element={<GiftBuilderPage />} />
+              <Route path="/darilo/preset/:packageId" element={<PresetGiftPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/change-password" element={<ChangePasswordPage />} />
               <Route path="/orders" element={<OrdersPage />} />
