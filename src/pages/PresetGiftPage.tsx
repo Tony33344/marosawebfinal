@@ -1,13 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Gift, Heart, ArrowLeft } from 'lucide-react';
+import { Gift, Heart, ArrowLeft, Maximize2 } from 'lucide-react';
 import { useProducts } from '../hooks/useProducts';
 import { supabase } from '../lib/supabaseClient';
-import { getImageUrl } from '../utils/imageUtils';
 import { PageHeader } from '../components/PageHeader';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useCart } from '../context/CartContext';
+import { ImageModal } from '../components/ImageModal';
 
 interface GiftPackage {
   id: number;
@@ -43,6 +43,7 @@ export function PresetGiftPage() {
   const [recipientName, setRecipientName] = useState('');
   const [recipientMessage, setRecipientMessage] = useState('');
   const [hasMessage, setHasMessage] = useState(false);
+  const [modalImage, setModalImage] = useState<{ url: string; alt: string } | null>(null);
 
   // Pre-defined product combinations for each package, expressed by
   // product name + option text, so we always match whatever IDs are in Supabase.
@@ -260,13 +261,22 @@ export function PresetGiftPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Package details */}
             <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex items-center mb-4">
-                <div className="w-16 h-16 rounded-md overflow-hidden mr-4">
+              <div className="flex items-center mb-4 group">
+                <div 
+                  className="w-16 h-16 rounded-md overflow-hidden mr-4 relative cursor-zoom-in"
+                  onClick={() => setModalImage({ 
+                    url: giftPackage.image_url || '/images/placeholder-gift.jpg', 
+                    alt: getTranslatedName(giftPackage) 
+                  })}
+                >
                   <img
                     src={giftPackage.image_url || '/images/placeholder-gift.jpg'}
                     alt={getTranslatedName(giftPackage)}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                    <Maximize2 className="text-white opacity-0 group-hover:opacity-100 transition-opacity w-4 h-4" />
+                  </div>
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-brown-800">{getTranslatedName(giftPackage)}</h2>
@@ -285,13 +295,24 @@ export function PresetGiftPage() {
                       const option = line.option;
                       const quantity = line.quantity;
                       return (
-                        <div key={index} className="flex items-center justify-between bg-gray-50 p-3 rounded">
+                        <div key={index} className="flex items-center justify-between bg-gray-50 p-3 rounded group">
                           <div className="flex items-center">
-                            <img
-                              src={(product as any)?.image_url || '/images/placeholder-product.jpg'}
-                              alt={product ? getTranslatedName(product) : 'Product not found'}
-                              className="w-10 h-10 object-cover rounded mr-3"
-                            />
+                            <div 
+                              className="w-10 h-10 overflow-hidden rounded mr-3 relative cursor-zoom-in"
+                              onClick={() => setModalImage({ 
+                                url: (product as any)?.image_url || '/images/placeholder-product.jpg', 
+                                alt: product ? getTranslatedName(product) : '' 
+                              })}
+                            >
+                              <img
+                                src={(product as any)?.image_url || '/images/placeholder-product.jpg'}
+                                alt={product ? getTranslatedName(product) : 'Product not found'}
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                              />
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                                <Maximize2 className="text-white opacity-0 group-hover:opacity-100 transition-opacity w-3 h-3" />
+                              </div>
+                            </div>
                             <div>
                               <p className="font-medium text-sm">{product ? getTranslatedName(product) : ''}</p>
                               <p className="text-xs text-gray-500">
@@ -389,6 +410,14 @@ export function PresetGiftPage() {
           </div>
         </div>
       </div>
+
+      {modalImage && (
+        <ImageModal
+          imageUrl={modalImage.url}
+          alt={modalImage.alt}
+          onClose={() => setModalImage(null)}
+        />
+      )}
     </div>
   );
 }

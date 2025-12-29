@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
-import { Gift, Package, ShoppingBag, Send, Heart } from 'lucide-react';
+import { Gift, Package, ShoppingBag, Send, Heart, Maximize2 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
-import { getImageUrl } from '../utils/imageUtils';
 import { PageHeader } from '../components/PageHeader';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { ImageModal } from '../components/ImageModal';
 
 interface GiftPackage {
   id: number;
@@ -29,6 +29,7 @@ export function DariloProductPage() {
   const [loading, setLoading] = useState(true);
   const [giftPackages, setGiftPackages] = useState<GiftPackage[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [modalImage, setModalImage] = useState<{ url: string; alt: string } | null>(null);
 
   // Check if a specific package ID is provided in the URL query parameters
   useEffect(() => {
@@ -194,14 +195,23 @@ export function DariloProductPage() {
           {giftPackages.map((giftPackage) => (
             <div
               key={giftPackage.id}
-              className="bg-white rounded-lg shadow-lg overflow-hidden border border-brown-100 hover:shadow-xl transition-shadow"
+              className="bg-white rounded-lg shadow-lg overflow-hidden border border-brown-100 hover:shadow-xl transition-shadow group"
             >
-              <div className="aspect-video overflow-hidden bg-brown-50">
+              <div 
+                className="aspect-video overflow-hidden bg-brown-50 relative cursor-zoom-in"
+                onClick={() => setModalImage({ 
+                  url: giftPackage.image_url || '/images/placeholder-product.jpg', 
+                  alt: getTranslatedName(giftPackage) 
+                })}
+              >
                 <img
                   src={giftPackage.image_url || '/images/placeholder-product.jpg'}
                   alt={getTranslatedName(giftPackage)}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                  <Maximize2 className="text-white opacity-0 group-hover:opacity-100 transition-opacity w-8 h-8" />
+                </div>
               </div>
               <div className="p-6">
                 <h2 className="text-2xl font-bold text-brown-800 mb-2">{getTranslatedName(giftPackage)}</h2>
@@ -266,6 +276,14 @@ export function DariloProductPage() {
           </div>
         </div>
       </div>
+
+      {modalImage && (
+        <ImageModal
+          imageUrl={modalImage.url}
+          alt={modalImage.alt}
+          onClose={() => setModalImage(null)}
+        />
+      )}
     </div>
   );
 }

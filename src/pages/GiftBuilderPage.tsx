@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Gift, ShoppingBag, X, Plus, Check } from 'lucide-react';
+import { Gift, ShoppingBag, X, Plus, Check, Maximize2 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
-import { getImageUrl } from '../utils/imageUtils';
+import { ImageModal } from '../components/ImageModal';
 import { useCart } from '../context/CartContext';
 import { PageHeader } from '../components/PageHeader';
 import { LoadingSpinner } from '../components/LoadingSpinner';
@@ -68,6 +68,7 @@ export function GiftBuilderPage() {
   const [error, setError] = useState<string | null>(null);
   const [recipientName, setRecipientName] = useState('');
   const [recipientMessage, setRecipientMessage] = useState('');
+  const [modalImage, setModalImage] = useState<{ url: string; alt: string } | null>(null);
 
   // Maximum number of products allowed based on package type
   const [maxProducts, setMaxProducts] = useState(5);
@@ -392,14 +393,23 @@ export function GiftBuilderPage() {
                 {filteredProducts.map(product => (
                   <div
                     key={product.id}
-                    className="border rounded-md p-3 hover:shadow-md transition-shadow"
+                    className="border rounded-md p-3 hover:shadow-md transition-shadow group"
                   >
-                    <div className="aspect-square overflow-hidden rounded-md mb-2">
+                    <div 
+                      className="aspect-square overflow-hidden rounded-md mb-2 relative cursor-zoom-in"
+                      onClick={() => setModalImage({ 
+                        url: product.image_url || '/images/placeholder-product.jpg', 
+                        alt: getTranslatedName(product) 
+                      })}
+                    >
                       <img
                         src={product.image_url || '/images/placeholder-product.jpg'}
                         alt={getTranslatedName(product)}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                        <Maximize2 className="text-white opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5" />
+                      </div>
                     </div>
                     <div className="text-sm font-medium mb-1 truncate">{getTranslatedName(product)}</div>
                     <div className="text-xs text-gray-500 mb-2 truncate">
@@ -438,14 +448,23 @@ export function GiftBuilderPage() {
                 {t('gifts.builder.summary', 'Povzetek darila')}
               </h2>
 
-              <div className="mb-4 p-3 bg-amber-50 rounded-md">
+              <div className="mb-4 p-3 bg-amber-50 rounded-md group">
                 <div className="flex items-center">
-                  <div className="w-16 h-16 rounded-md overflow-hidden mr-3">
+                  <div 
+                    className="w-16 h-16 rounded-md overflow-hidden mr-3 relative cursor-zoom-in"
+                    onClick={() => setModalImage({ 
+                      url: giftPackage.image_url || '/images/placeholder-gift.jpg', 
+                      alt: getTranslatedName(giftPackage) 
+                    })}
+                  >
                     <img
                       src={giftPackage.image_url || '/images/placeholder-gift.jpg'}
                       alt={getTranslatedName(giftPackage)}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                      <Maximize2 className="text-white opacity-0 group-hover:opacity-100 transition-opacity w-4 h-4" />
+                    </div>
                   </div>
                   <div>
                     <h3 className="font-medium">{getTranslatedName(giftPackage)}</h3>
@@ -588,6 +607,14 @@ export function GiftBuilderPage() {
           </div>
         </div>
       </div>
+
+      {modalImage && (
+        <ImageModal
+          imageUrl={modalImage.url}
+          alt={modalImage.alt}
+          onClose={() => setModalImage(null)}
+        />
+      )}
     </div>
   );
 }
