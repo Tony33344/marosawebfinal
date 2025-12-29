@@ -9,7 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "build:scripts": "tsc --project tsconfig.script.json && node dist-script/migrate-products.js",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
     "supabase": "./node_modules/supabase/bin/supabase",
     "deploy": "./deploy-to-netlify.sh",
     "netlify-link": "node netlify-deploy-link.js",
@@ -61,6 +61,7 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@eslint/js": "^8.57.0",
     "@playwright/test": "^1.57.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
@@ -77,12 +78,14 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.6",
     "form-data": "^4.0.2",
+    "globals": "^15.0.0",
     "jsdom": "^26.1.0",
     "netlify-cli": "^20.0.2",
     "node-fetch": "^2.7.0",
     "postcss": "^8.4.38",
     "supabase": "^2.20.12",
     "tailwindcss": "^3.4.3",
+    "typescript-eslint": "^7.2.0",
     "typescript": "^5.4.5",
     "vite": "^5.4.16",
     "vitest": "^3.1.2"

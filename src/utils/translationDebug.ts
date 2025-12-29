@@ -139,7 +139,7 @@ export const compareTranslationCoverage = (): Record<string, {
  * @param enable Whether to enable highlighting
  */
 export const highlightMissingTranslations = (enable: boolean = true): void => {
-  if (process.env.NODE_ENV !== 'development') {
+  if (!import.meta.env.DEV) {
     console.warn('Translation highlighting is only available in development mode');
     return;
   }

@@ -5,7 +5,6 @@ import { supabase } from '../lib/supabaseClient';
 import { sendEmail } from './emailService';
 import { generateConfirmationEmailHtml, generateConfirmationEmailText } from '../templates/confirmationEmail';
 import { generateWelcomeEmailHtml, generateWelcomeEmailText } from '../templates/welcomeEmail';
-import { createWelcomeDiscount } from './discountUtils';
 
 // Email configuration
 const DEFAULT_FROM_EMAIL = 'kmetija.marosa.narocila@gmail.com';
@@ -13,7 +12,7 @@ const REPLY_TO_EMAIL = 'kmetija.marosa.narocila@gmail.com';
 
 // Set BASE_URL dynamically based on environment
 const BASE_URL = (() => {
-  if (process.env.NODE_ENV === 'development') {
+  if (import.meta.env.DEV) {
     return window.location.origin; // Use current origin in development (e.g., http://localhost:5173)
   }
 
@@ -39,21 +38,6 @@ interface SubscriptionData {
   language?: string;
 }
 
-interface Subscriber {
-  id: string;
-  email: string;
-  name?: string;
-  is_active: boolean;
-  confirmation_status: string;
-  confirmation_token: string | null;
-  source: string;
-  preferences: {
-    productUpdates: boolean;
-    promotions: boolean;
-    recipes: boolean;
-  };
-}
-
 /**
  * Subscribe a user to the newsletter (creates pending subscription)
  *
@@ -73,7 +57,7 @@ export async function subscribeToNewsletter(data: SubscriptionData): Promise<{
     const unsubscribeToken = generateSecureToken();
 
     // Insert with the generated tokens
-    const { data: insertData, error: insertError } = await supabase
+    const { error: insertError } = await supabase
       .from('newsletter_subscribers')
       .insert([
         {
@@ -196,7 +180,7 @@ async function sendConfirmationEmail(data: {
 
       // For development/testing, return success even if email fails
       // This allows testing the flow without a working email service
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         console.log('Development mode: Simulating successful email send');
         console.log('Confirmation URL would be:', confirmationUrl);
         return {
@@ -493,7 +477,7 @@ async function sendWelcomeEmail(data: {
       console.error('Error in email sending service:', emailError);
 
       // For development/testing, return success even if email fails
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         console.log('Development mode: Simulating successful welcome email send');
         console.log('Unsubscribe URL would be:', unsubscribeUrl);
         return {
@@ -576,7 +560,7 @@ export async function unsubscribeFromNewsletter(token: string): Promise<{
     } catch (error) {
       console.error('Error updating subscriber status:', error);
       // If we're in development mode, continue anyway
-      if (process.env.NODE_ENV !== 'development') {
+      if (!import.meta.env.DEV) {
         throw error;
       }
     }
@@ -601,7 +585,7 @@ export async function unsubscribeFromNewsletter(token: string): Promise<{
  */
 export async function updateSubscriberPreferences(
   token: string,
-  preferences: {
+  _preferences: {
     productUpdates?: boolean;
     promotions?: boolean;
     recipes?: boolean;
@@ -620,7 +604,7 @@ export async function updateSubscriberPreferences(
     try {
       const { data: subscriberData, error: fetchError } = await supabase
         .from('newsletter_subscribers')
-        .select('id, preferences')
+        .select('id')
         .eq('unsubscribe_token', token)
         .single();
 
@@ -640,7 +624,7 @@ export async function updateSubscriberPreferences(
     }
 
     // Skip updating the preferences - just return success
-    console.log('Would update preferences for user with email:', subscriber.email);
+    console.log('Would update preferences for subscriber id:', subscriber.id);
 
     return {
       success: true,

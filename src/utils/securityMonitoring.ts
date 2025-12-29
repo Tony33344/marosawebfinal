@@ -75,7 +75,7 @@ export async function logSecurityEvent(
     };
     
     // Log to console in development
-    if (process.env.NODE_ENV !== 'production') {
+    if (import.meta.env.DEV) {
       console.info(`[SECURITY EVENT] ${type}:`, event);
     }
     
@@ -83,7 +83,7 @@ export async function logSecurityEvent(
     storeSecurityEventLocally(event);
     
     // In production, send to server
-    if (process.env.NODE_ENV === 'production') {
+    if (import.meta.env.PROD) {
       // This would be implemented with a server-side endpoint
       // For now, we'll just log to Supabase Edge Function if available
       try {

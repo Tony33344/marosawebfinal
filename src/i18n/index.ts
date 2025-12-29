@@ -38,9 +38,9 @@ i18n
     load: 'languageOnly', // Only load the language code, not the region (e.g. 'en' instead of 'en-US')
     ns: ['translation'], // Use 'translation' namespace by default
     defaultNS: 'translation',
-    saveMissing: process.env.NODE_ENV === 'development', // Save missing translations in development mode
-    missingKeyHandler: (lng, ns, key, fallbackValue) => {
-      if (process.env.NODE_ENV === 'development') {
+    saveMissing: import.meta.env.DEV, // Save missing translations in development mode
+    missingKeyHandler: (lng, _ns, key, _fallbackValue) => {
+      if (import.meta.env.DEV) {
         console.warn(`Missing translation: ${key} (${lng})`);
       }
     },
@@ -50,7 +50,7 @@ i18n
 i18n.on('languageChanged', async (language) => {
   try {
     // Only try to load from database in production
-    if (process.env.NODE_ENV === 'production') {
+    if (import.meta.env.PROD) {
       // Dynamically import the translation service to avoid circular dependencies
       const { default: translationService } = await import('../services/translationService');
 
@@ -63,7 +63,9 @@ i18n.on('languageChanged', async (language) => {
 });
 
 // Log the current language for debugging
-console.log('Current language:', i18n.language);
-console.log('Available languages:', i18n.languages);
+if (import.meta.env.DEV) {
+  console.log('Current language:', i18n.language);
+  console.log('Available languages:', i18n.languages);
+}
 
 export default i18n;

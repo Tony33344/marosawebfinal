@@ -1,13 +1,20 @@
-import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Clock, X } from 'lucide-react';
+import { TimeLimitedDiscount } from '../services/discountService';
 
 interface SimpleBannerProps {
+  discount?: TimeLimitedDiscount | null;
   onDismiss: () => void;
 }
 
-export function SimpleBanner({ onDismiss }: SimpleBannerProps) {
+export function SimpleBanner({ discount, onDismiss }: SimpleBannerProps) {
   const { t, i18n } = useTranslation();
+
+  if (!discount) return null;
+
+  const code = discount.code || (i18n.language === 'sl' ? 'BREZPOSTNINE' : 'FREESHIPPING');
+  const amount = discount.discount_value?.toFixed?.(2) ?? String(discount.discount_value ?? '');
+  const minOrder = discount.min_order_amount?.toFixed?.(2) ?? String(discount.min_order_amount ?? '');
 
   return (
     <div className="bg-gradient-to-r from-amber-500 to-brown-600 text-white py-2 sm:py-3 relative">
@@ -22,9 +29,9 @@ export function SimpleBanner({ onDismiss }: SimpleBannerProps) {
 
           <div className="font-medium text-xs sm:text-sm md:text-base">
             {t('promotions.fixedDiscountBanner', 'Uporabite kodo {{code}} za €{{amount}} popusta pri nakupu nad €{{minOrder}}!', {
-              code: i18n.language === 'sl' ? 'BREZPOSTNINE' : 'FREESHIPPING',
-              amount: '3.90',
-              minOrder: '20.00'
+              code,
+              amount,
+              minOrder,
             })}
           </div>
 

@@ -236,7 +236,7 @@ export function AddProductForm({ onClose, onSuccess }: AddProductFormProps) {
                     className="w-full h-full object-contain p-2"
                     onError={(e) => {
                       // Only log in development
-                      if (process.env.NODE_ENV !== 'production') {
+                      if (import.meta.env.DEV) {
                         console.error('Error loading image:', imageUrl);
                       }
                       // Use a local placeholder image instead of external URL to avoid CORS issues
@@ -267,7 +267,7 @@ export function AddProductForm({ onClose, onSuccess }: AddProductFormProps) {
                         className="w-full h-full object-contain p-1"
                         onError={(e) => {
                           // Only log in development
-                          if (process.env.NODE_ENV !== 'production') {
+                          if (import.meta.env.DEV) {
                             console.error('Error loading additional image:', imgUrl);
                           }
                           // Use a local placeholder image instead of external URL to avoid CORS issues

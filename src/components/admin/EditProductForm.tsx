@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Product, PackageOption } from '../../types';
 import { supabase } from '../../lib/supabaseClient';
@@ -278,7 +278,7 @@ export function EditProductForm({ product, onClose, onSuccess }: EditProductForm
                     alt={name}
                     className="w-full h-full object-contain p-2"
                     onError={(e) => {
-                      if (process.env.NODE_ENV !== 'production') {
+                      if (import.meta.env.DEV) {
                         console.error('Error loading image:', imageUrl);
                       }
                       (e.target as HTMLImageElement).src = '/images/placeholder-product.jpg';
@@ -348,7 +348,7 @@ export function EditProductForm({ product, onClose, onSuccess }: EditProductForm
                         alt={`${name} - Slika ${index + 1}`}
                         className="w-full h-full object-contain p-1"
                         onError={(e) => {
-                          if (process.env.NODE_ENV !== 'production') {
+                          if (import.meta.env.DEV) {
                             console.error('Error loading additional image:', imgUrl);
                           }
                           (e.target as HTMLImageElement).src = '/images/placeholder-product.jpg';

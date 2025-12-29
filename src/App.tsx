@@ -3,7 +3,6 @@ import { useEffect, Suspense, lazy } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { initSessionTimeout, cleanupSessionTimeout } from './utils/sessionTimeout';
-import './utils/testDiscountAccess'; // Auto-run discount access test
 import { useFirstTimeVisitor } from './hooks/useFirstTimeVisitor';
 import { useTimeLimitedOffer } from './hooks/useTimeLimitedOffer';
 import { Header } from './components/Header';
@@ -50,7 +49,6 @@ import { StagingBanner } from './components/StagingBanner';
 import { ToastProvider } from './components/Toast';
 import { NewsletterSignup } from './components/NewsletterSignup';
 import { FirstTimeVisitorDiscount } from './components/FirstTimeVisitorDiscount';
-import { LimitedTimeOffer } from './components/LimitedTimeOffer';
 import { PageLoadingSpinner } from './components/common/LoadingSpinner';
 import { SimpleBanner } from './components/SimpleBanner';
 import ConfirmSubscriptionPage from './pages/ConfirmSubscriptionPage';
@@ -96,33 +94,6 @@ function App() {
   // Use the time-limited offer hook
   const { discount: fetchedDiscount, dismissed, handleDismiss } = useTimeLimitedOffer();
 
-  // FORCE BANNER: Create a hardcoded discount to ensure the banner displays
-  const currentDate = new Date();
-  const futureDate = new Date();
-  futureDate.setDate(futureDate.getDate() + 30); // 30 days from now
-
-  const discount = {
-    id: '0b1b22f4-e423-41bd-8f91-ac1e6399ebcd',
-    code: 'BREZPOSTNINE',
-    description: 'Brezplačna poštnina',
-    discount_type: 'fixed',
-    discount_value: 3.90,
-    min_order_amount: 20.00,
-    max_uses: null,
-    current_uses: 0,
-    valid_from: currentDate.toISOString(),
-    valid_until: futureDate.toISOString(),
-    is_active: true,
-    created_at: currentDate.toISOString(),
-    updated_at: currentDate.toISOString(),
-    category: null,
-    product_id: null,
-    banner_text: null,
-    show_in_banner: true,
-    banner_start_time: currentDate.toISOString(),
-    banner_end_time: futureDate.toISOString()
-  };
-
   // Initialize session timeout
   useEffect(() => {
     // Initialize session timeout (30 minutes)
@@ -158,6 +129,11 @@ function App() {
     console.log(`Current language after initialization: ${i18n.language}`);
   }, [location, i18n]);
 
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    import('./utils/testDiscountAccess');
+  }, []);
+
   return (
     <HelmetProvider>
       <div className="min-h-screen bg-stone-50">
@@ -167,7 +143,9 @@ function App() {
           <StripeProvider>
             <ScrollToTop />
             {/* DIRECT BANNER: Show the simple banner only if not dismissed */}
-            {!dismissed && <SimpleBanner onDismiss={handleDismiss} />}
+            {fetchedDiscount && !dismissed && (
+              <SimpleBanner discount={fetchedDiscount} onDismiss={handleDismiss} />
+            )}
             <Navigation />
             <Routes>
               <Route path="/" element={<HomePage />} />
@@ -189,7 +167,6 @@ function App() {
               <Route path="/orders" element={<OrdersPage />} />
               <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
               <Route path="/order-success" element={<OrderSuccessPage />} />
-              <Route path="/test-stripe" element={<TestStripePage />} />
               <Route path="/admin/orders" element={
                 <SecureAdminRoute>
                   <Suspense fallback={<PageLoadingSpinner />}>
@@ -232,24 +209,31 @@ function App() {
                   </Suspense>
                 </SecureAdminRoute>
               } />
-              <Route path="/admin/debug" element={
-                <Suspense fallback={<PageLoadingSpinner />}>
-                  <AdminDebugPage />
-                </Suspense>
-              } />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/auth/callback" element={<AuthCallbackPage />} />
               <Route path="/auth/confirm-registration" element={<AuthCallbackPage />} />
               <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-              <Route path="/image-test" element={<ImageTest />} />
               <Route path="/confirm-subscription" element={<ConfirmSubscriptionPage />} />
               <Route path="/unsubscribe" element={<UnsubscribePage />} />
-              <Route path="/test-darilo-link" element={<TestDariloLinkPage />} />
-              <Route path="/test-email" element={<EmailTestPage />} />
-              <Route path="/test-direct-email" element={<DirectEmailTestPage />} />
-              <Route path="/popup-debug" element={<PopupDebugPage />} />
-              <Route path="/test-toast" element={<TestToastNotification />} />
-              <Route path="/test-sticky" element={<TestStickyNotification />} />
+              {import.meta.env.DEV && (
+                <>
+                  <Route path="/admin/debug" element={
+                    <SecureAdminRoute>
+                      <Suspense fallback={<PageLoadingSpinner />}>
+                        <AdminDebugPage />
+                      </Suspense>
+                    </SecureAdminRoute>
+                  } />
+                  <Route path="/test-stripe" element={<TestStripePage />} />
+                  <Route path="/image-test" element={<ImageTest />} />
+                  <Route path="/test-darilo-link" element={<TestDariloLinkPage />} />
+                  <Route path="/test-email" element={<EmailTestPage />} />
+                  <Route path="/test-direct-email" element={<DirectEmailTestPage />} />
+                  <Route path="/popup-debug" element={<PopupDebugPage />} />
+                  <Route path="/test-toast" element={<TestToastNotification />} />
+                  <Route path="/test-sticky" element={<TestStickyNotification />} />
+                </>
+              )}
             </Routes>
             <Footer />
             {/* Error Monitor - only visible in development mode */}
@@ -263,7 +247,7 @@ function App() {
             {showPopup && <FirstTimeVisitorDiscount onClose={closePopup} />}
 
             {/* Debug button - only visible in development */}
-            {process.env.NODE_ENV === 'development' && (
+            {import.meta.env.DEV && (
               <div className="fixed bottom-4 right-4 z-50 flex space-x-2">
                 <button
                   onClick={clearAllFlags}
@@ -284,7 +268,7 @@ function App() {
                   Debug
                 </a>
                 {/* Banner debug info */}
-                {discount && (
+                {fetchedDiscount && (
                   <div className="px-3 py-1 bg-yellow-500 text-white text-sm rounded">
                     Banner Active
                   </div>

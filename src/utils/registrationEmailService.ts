@@ -5,8 +5,11 @@ const DEFAULT_FROM_EMAIL = 'kmetija.marosa.narocila@gmail.com';
 const REPLY_TO_EMAIL = 'kmetija.marosa.narocila@gmail.com';
 // Set BASE_URL dynamically based on environment
 const BASE_URL = (() => {
-  if (process.env.NODE_ENV === 'development') {
-    return 'http://localhost:5174'; // Development URL
+  if (import.meta.env.DEV) {
+    if (typeof window !== 'undefined') {
+      return window.location.origin;
+    }
+    return 'http://localhost:5173';
   }
 
   // In production, use the current domain automatically
@@ -18,15 +21,6 @@ const BASE_URL = (() => {
   // Fallback for server-side rendering
   return 'https://marosakreditna.netlify.app';
 })();
-
-/**
- * Generate a secure token for email confirmation
- */
-function generateSecureToken(): string {
-  const array = new Uint8Array(32);
-  crypto.getRandomValues(array);
-  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
-}
 
 /**
  * Send simple welcome email after registration (like newsletter)
@@ -83,7 +77,7 @@ export async function sendRegistrationConfirmationEmail(data: {
       console.error('Error in email sending service:', emailError);
 
       // For development/testing, return success even if email fails
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         console.log('Development mode: Simulating successful email send');
         return {
           success: true,

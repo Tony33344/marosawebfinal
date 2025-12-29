@@ -32,12 +32,10 @@ export async function hasValidAdminSession(): Promise<boolean> {
 
     // Check both sessionStorage and localStorage for admin session
     let sessionData = sessionStorage.getItem(ADMIN_SESSION_KEY);
-    let storageType = 'session';
 
     // If not in sessionStorage, try localStorage
     if (!sessionData) {
       sessionData = localStorage.getItem(ADMIN_SESSION_STORAGE_KEY);
-      storageType = 'local';
 
       // If not in localStorage either, return false
       if (!sessionData) return false;
@@ -153,7 +151,7 @@ export async function createAdminSession(): Promise<boolean> {
     console.error('Error creating admin session:', error);
 
     // For development purposes, create a session anyway
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       console.log('Creating admin session despite error (development mode)');
       const session: AdminSession = {
         timestamp: Date.now(),
@@ -186,12 +184,10 @@ export async function refreshAdminSession(): Promise<boolean> {
   try {
     // Check both sessionStorage and localStorage for admin session
     let sessionData = sessionStorage.getItem(ADMIN_SESSION_KEY);
-    let storageType = 'session';
 
     // If not in sessionStorage, try localStorage
     if (!sessionData) {
       sessionData = localStorage.getItem(ADMIN_SESSION_STORAGE_KEY);
-      storageType = 'local';
 
       // If not in localStorage either, return false
       if (!sessionData) return false;

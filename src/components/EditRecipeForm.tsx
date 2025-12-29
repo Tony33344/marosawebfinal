@@ -118,31 +118,36 @@ export function EditRecipeForm({ recipe, onClose, onSuccess }: EditRecipeFormPro
   // Handle updating an ingredient
   const handleUpdateIngredient = (index: number, value: string, language: string = 'default') => {
     switch (language) {
-      case 'en':
+      case 'en': {
         const updatedIngredientsEn = [...ingredientsEn];
         updatedIngredientsEn[index] = value;
         setIngredientsEn(updatedIngredientsEn);
         break;
-      case 'de':
+      }
+      case 'de': {
         const updatedIngredientsDe = [...ingredientsDe];
         updatedIngredientsDe[index] = value;
         setIngredientsDe(updatedIngredientsDe);
         break;
-      case 'hr':
+      }
+      case 'hr': {
         const updatedIngredientsHr = [...ingredientsHr];
         updatedIngredientsHr[index] = value;
         setIngredientsHr(updatedIngredientsHr);
         break;
-      case 'sl':
+      }
+      case 'sl': {
         const updatedIngredientsSl = [...ingredientsSl];
         updatedIngredientsSl[index] = value;
         setIngredientsSl(updatedIngredientsSl);
         break;
-      default:
+      }
+      default: {
         const updatedIngredients = [...ingredients];
         updatedIngredients[index] = value;
         setIngredients(updatedIngredients);
         break;
+      }
     }
   };
   
@@ -191,31 +196,36 @@ export function EditRecipeForm({ recipe, onClose, onSuccess }: EditRecipeFormPro
   // Handle updating an instruction
   const handleUpdateInstruction = (index: number, value: string, language: string = 'default') => {
     switch (language) {
-      case 'en':
+      case 'en': {
         const updatedInstructionsEn = [...instructionsEn];
         updatedInstructionsEn[index] = value;
         setInstructionsEn(updatedInstructionsEn);
         break;
-      case 'de':
+      }
+      case 'de': {
         const updatedInstructionsDe = [...instructionsDe];
         updatedInstructionsDe[index] = value;
         setInstructionsDe(updatedInstructionsDe);
         break;
-      case 'hr':
+      }
+      case 'hr': {
         const updatedInstructionsHr = [...instructionsHr];
         updatedInstructionsHr[index] = value;
         setInstructionsHr(updatedInstructionsHr);
         break;
-      case 'sl':
+      }
+      case 'sl': {
         const updatedInstructionsSl = [...instructionsSl];
         updatedInstructionsSl[index] = value;
         setInstructionsSl(updatedInstructionsSl);
         break;
-      default:
+      }
+      default: {
         const updatedInstructions = [...instructions];
         updatedInstructions[index] = value;
         setInstructions(updatedInstructions);
         break;
+      }
     }
   };
   

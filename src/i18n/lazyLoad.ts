@@ -16,22 +16,26 @@ export const loadLanguageAsync = async (language: string): Promise<void> => {
 
     // Dynamically import the language file
     switch (language) {
-      case 'en':
+      case 'en': {
         const { english } = await import('./languages/en');
         translations = english;
         break;
-      case 'sl':
+      }
+      case 'sl': {
         const { slovenian } = await import('./languages/sl');
         translations = slovenian;
         break;
-      case 'hr':
+      }
+      case 'hr': {
         const { croatian } = await import('./languages/hr');
         translations = croatian;
         break;
-      case 'de':
+      }
+      case 'de': {
         const { german } = await import('./languages/de');
         translations = german;
         break;
+      }
       default:
         console.warn(`Language ${language} is not supported for lazy loading`);
         return;
