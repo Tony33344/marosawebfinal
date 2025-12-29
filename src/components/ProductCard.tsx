@@ -48,7 +48,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const price = getPrice();
 
   // Create the appropriate link - if product ID is 14, link to Darilo page
-  const productLink = product.id === 14
+  const productLink = product.id === '14' || product.id === 14
     ? `/darilo?lang=${i18n.language}`
     : `/izdelek/${product.id}?lang=${i18n.language}`;
 
