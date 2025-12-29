@@ -263,7 +263,7 @@ export function PresetGiftPage() {
               <div className="flex items-center mb-4">
                 <div className="w-16 h-16 rounded-md overflow-hidden mr-4">
                   <img
-                    src={getImageUrl(giftPackage.image_url || '') || '/images/placeholder-gift.jpg'}
+                    src={giftPackage.image_url || '/images/placeholder-gift.jpg'}
                     alt={getTranslatedName(giftPackage)}
                     className="w-full h-full object-cover"
                   />
@@ -288,7 +288,7 @@ export function PresetGiftPage() {
                         <div key={index} className="flex items-center justify-between bg-gray-50 p-3 rounded">
                           <div className="flex items-center">
                             <img
-                              src={getImageUrl((product as any)?.image_url || '') || '/images/placeholder-product.jpg'}
+                              src={(product as any)?.image_url || '/images/placeholder-product.jpg'}
                               alt={product ? getTranslatedName(product) : 'Product not found'}
                               className="w-10 h-10 object-cover rounded mr-3"
                             />

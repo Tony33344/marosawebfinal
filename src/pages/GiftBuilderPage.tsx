@@ -396,7 +396,7 @@ export function GiftBuilderPage() {
                   >
                     <div className="aspect-square overflow-hidden rounded-md mb-2">
                       <img
-                        src={getImageUrl(product.image_url || '') || '/images/placeholder-product.jpg'}
+                        src={product.image_url || '/images/placeholder-product.jpg'}
                         alt={getTranslatedName(product)}
                         className="w-full h-full object-cover"
                       />
@@ -442,7 +442,7 @@ export function GiftBuilderPage() {
                 <div className="flex items-center">
                   <div className="w-16 h-16 rounded-md overflow-hidden mr-3">
                     <img
-                      src={getImageUrl(giftPackage.image_url || '') || '/images/placeholder-gift.jpg'}
+                      src={giftPackage.image_url || '/images/placeholder-gift.jpg'}
                       alt={getTranslatedName(giftPackage)}
                       className="w-full h-full object-cover"
                     />
@@ -469,7 +469,7 @@ export function GiftBuilderPage() {
                       <div key={`${sp.product.id}-${sp.packageOption.uniq_id}`} className="flex items-center border-b pb-2">
                         <div className="w-12 h-12 rounded-md overflow-hidden mr-2">
                           <img
-                            src={getImageUrl(sp.product.image_url || '') || '/images/placeholder-product.jpg'}
+                            src={sp.product.image_url || '/images/placeholder-product.jpg'}
                             alt={getTranslatedName(sp.product)}
                             className="w-full h-full object-cover"
                           />
