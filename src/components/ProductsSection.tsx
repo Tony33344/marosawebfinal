@@ -138,7 +138,8 @@ export const ProductsSection = () => {
         console.log('Fetching products from Supabase...');
         const { data, error } = await supabase
           .from('products')
-          .select('*');
+          .select('*')
+          .eq('isActive', true);
 
         if (error) {
           console.error('Supabase error:', error);
