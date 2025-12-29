@@ -198,7 +198,7 @@ export function DariloProductPage() {
             >
               <div className="aspect-video overflow-hidden bg-brown-50">
                 <img
-                  src={getImageUrl(giftPackage.image_url || '') || '/images/placeholder-product.jpg'}
+                  src={giftPackage.image_url || '/images/placeholder-product.jpg'}
                   alt={getTranslatedName(giftPackage)}
                   className="w-full h-full object-cover"
                 />
