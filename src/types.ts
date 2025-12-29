@@ -9,7 +9,7 @@ export interface PackageOption {
 }
 
 export interface Product {
-  id: number;
+  id: number | string; // Can be either number or string from database
   created_at: string;
   name: string;
   name_en?: string;
@@ -25,11 +25,13 @@ export interface Product {
   additional_images?: string[]; // Array of additional image URLs
   stock_quantity?: number;
   category?: string;
+  isActive?: boolean;
+  created_by?: string;
 }
 
 // Updated CartItem to use string for packageOptionId
 export interface CartItem {
-  productId: number;
+  productId: number | string; // Can be either number or string from database
   packageOptionId: string; // Changed to string to match uniq_id
   quantity: number;
 }
