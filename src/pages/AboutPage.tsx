@@ -82,15 +82,15 @@ const mediaItems: MediaItem[] = [
 
 const shopImages = [
   {
-    url: 'https://i.ibb.co/HTY4Knvx/Trgovina1.jpg',
+    url: 'https://wiwjkholoebkzzjoczjn.supabase.co/storage/v1/object/public/marosaimages/images/o%20nas/trgovina%202.jpeg',
     alt: 'Trgovina Kmetije Maroša - Pogled 1'
   },
   {
-    url: 'https://i.ibb.co/dsP24xPk/Trgovina2.jpg',
+    url: 'https://wiwjkholoebkzzjoczjn.supabase.co/storage/v1/object/public/marosaimages/images/o%20nas/trgovina1.jpeg',
     alt: 'Trgovina Kmetije Maroša - Pogled 2'
   },
   {
-    url: 'https://i.ibb.co/RkhFJgvr/Trgovina3.jpg',
+    url: 'https://wiwjkholoebkzzjoczjn.supabase.co/storage/v1/object/public/marosaimages/images/o%20nas/trgovina.jpeg',
     alt: 'Trgovina Kmetije Maroša - Pogled 3'
   },
   {
@@ -131,9 +131,14 @@ export function AboutPage() {
                 <p className="mb-6">
                   {t('aboutPage.story.content2')}
                 </p>
-                <p>
+                <p className="mb-6">
                   {t('aboutPage.story.content3')}
                 </p>
+                <img
+                  src="https://wiwjkholoebkzzjoczjn.supabase.co/storage/v1/object/public/marosaimages/images/o%20nas/druzina3.jpeg"
+                  alt="Družina Kmetije Maroša"
+                  className="w-full max-w-2xl mx-auto rounded-lg shadow-lg object-cover"
+                />
               </div>
             </div>
           </div>
