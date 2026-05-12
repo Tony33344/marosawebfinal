@@ -20,6 +20,7 @@ export function EditProductForm({ product, onClose, onSuccess }: EditProductForm
   const [additionalImages, setAdditionalImages] = useState<string[]>(product.additional_images || []);
   const [newImageUrl, setNewImageUrl] = useState('');
   const [stockQuantity, setStockQuantity] = useState(product.stock_quantity || 0);
+  const [isActive, setIsActive] = useState(product.isActive !== false);
   const [packageOptions, setPackageOptions] = useState<PackageOption[]>(() => {
     if (typeof product.package_options === 'string') {
       try {
@@ -137,6 +138,7 @@ export function EditProductForm({ product, onClose, onSuccess }: EditProductForm
         category: finalCategory,
         image_url: finalImageUrl,
         stock_quantity: stockQuantity,
+        isActive,
         // Always include additional_images field to ensure it gets updated
         // even when all images have been removed
         additional_images: additionalImages && additionalImages.length > 0 ? additionalImages : null,
@@ -259,6 +261,19 @@ export function EditProductForm({ product, onClose, onSuccess }: EditProductForm
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-brown-500"
                   placeholder="0"
                 />
+              </div>
+
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="isActive"
+                  checked={isActive}
+                  onChange={(e) => setIsActive(e.target.checked)}
+                  className="h-4 w-4 text-brown-600 focus:ring-brown-500 border-gray-300 rounded"
+                />
+                <label htmlFor="isActive" className="ml-2 block text-sm text-gray-700">
+                  Aktiven izdelek
+                </label>
               </div>
             </div>
           </div>
