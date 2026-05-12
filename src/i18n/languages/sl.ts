@@ -252,7 +252,7 @@ export const slovenian = {
   },
   hero: {
     title: 'Kmetija Maroša',
-    subtitle: 'Najboljše iz narave, dostavljeno na vaš prag.',
+    subtitle: 'Najboljše iz narave, pridelano na ekološki način in dostavljeno na vaš prag.',
     cta: 'Razišči izdelke',
   },
   about: {
