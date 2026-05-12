@@ -305,84 +305,8 @@ export function ProductDetail() {
         images = [mainImageUrl];
       }
 
-      // If no images are available from the database, use product-specific fallback images
-      if (images.length === 0) {
-        // Define fallback images based on product ID
-        const fallbackImageMap: Record<number, string[]> = {
-          // Bučno olje / semena
-          1: [
-            'https://i.ibb.co/zTGSYLCX/olje.jpg',
-            'https://i.ibb.co/JWMLz5S5/bucno-olje2.jpg',
-            'https://i.ibb.co/s9X6Qt57/bucna-semena-1.jpg'
-          ],
-          2: [
-            'https://wiwjkholoebkzzjoczjn.supabase.co/storage/v1/object/public/marosaimages/images/bucna-semena/bucnasemena2.jpg',
-            'https://wiwjkholoebkzzjoczjn.supabase.co/storage/v1/object/public/marosaimages/images/bucna-semena/bucna-semena-buce.jpg',
-            'https://wiwjkholoebkzzjoczjn.supabase.co/storage/v1/object/public/marosaimages/images/bucna-semena/vse1.jpg'
-          ],
-          // Konoplja
-          3: [
-            'https://i.ibb.co/gFZp3m0S/konoplja1.jpg',
-            'https://i.ibb.co/zThVL6bP/konoplja2.jpg'
-          ],
-          4: [
-            'https://i.ibb.co/gFZp3m0S/konoplja1.jpg',
-            'https://i.ibb.co/zThVL6bP/konoplja2.jpg'
-          ],
-          // Melisa
-          5: [
-            'https://wiwjkholoebkzzjoczjn.supabase.co/storage/v1/object/public/marosaimages/images/melisa/melisa1.jpeg',
-            'https://wiwjkholoebkzzjoczjn.supabase.co/storage/v1/object/public/marosaimages/images/melisa/melisa2.jpeg',
-            'https://wiwjkholoebkzzjoczjn.supabase.co/storage/v1/object/public/marosaimages/images/melisa/melisa.jpg'
-          ],
-          // Poprova meta
-          6: [
-            'https://i.ibb.co/7tVYzd26/Poprova-meta1.jpg',
-            'https://i.ibb.co/Pv1Q4yKn/Poprova-meta2.jpg',
-            'https://i.ibb.co/gM2WTH9Z/Poprova-meta3.jpg'
-          ],
-          // Ameriški slamnik (Echinacea)
-          7: [
-            'https://i.ibb.co/gFZp3m0S/Ameri-ki-slamnik1.jpg',
-            'https://i.ibb.co/zThVL6bP/Ameri-ki-slamnik2.jpg',
-            'https://i.ibb.co/Qvb0yKG4/Ameri-ki-slamnik3.jpg'
-          ],
-          // Kamilice
-          8: [
-            'https://i.ibb.co/99PH97wR/Kamilica1.jpg'
-          ],
-          // Aronija
-          9: [
-            'https://i.ibb.co/DDnHs4nj/aronija.jpg'
-          ],
-          // Ajdova kaša
-          10: [
-            'https://i.ibb.co/Fb61P4mS/Proso2.jpg',
-            'https://i.ibb.co/Ld7MdXvw/Proso1.jpg'
-          ],
-          // Prosena kaša
-          11: [
-            'https://i.ibb.co/Fb61P4mS/Proso2.jpg',
-            'https://i.ibb.co/Ld7MdXvw/Proso1.jpg'
-          ],
-          // Fižol češnjevec
-          12: [
-            'https://i.ibb.co/zTWPQ1vx/fizol-cesenjvec1.jpg',
-            'https://i.ibb.co/6hLDXZZ/fizol-cesenjvec2.jpg'
-          ],
-          // Pegasti badelj
-          13: [
-            'https://i.ibb.co/6RxY7m8v/Pegasti-badelj-1.jpg'
-          ]
-        };
-
-        // Get fallback images for this product
-        const productId = typeof product.id === 'string' ? parseInt(product.id, 10) : product.id;
-        const fallbackImages = fallbackImageMap[productId] || [];
-
-        // Process fallback images through our utility
-        images = fallbackImages.map(img => getImageUrl(img));
-      }
+      // If no images are available from the database, the gallery will be empty
+      // Admin should add images via the product edit form
 
       // Limit to 6 images maximum and filter out any invalid URLs or placeholder images
       const validImages = images
