@@ -711,7 +711,6 @@ export function ProductDetail() {
                       height={300}
                       decoding="async"
                     />
-                    <div className="text-[10px] text-red-600 bg-white/90 p-1 break-all absolute bottom-0 left-0 right-0">{image}</div>
                   </div>
                 ))}
               </div>
