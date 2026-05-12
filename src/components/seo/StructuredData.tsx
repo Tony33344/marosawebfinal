@@ -84,7 +84,7 @@ export const LocalBusinessSchema: React.FC = () => {
     '@id': 'https://kmetija-marosa.si',
     name: 'Kmetija Maroša',
     image: 'https://kmetija-marosa.si/assets/logo.png',
-    description: 'Ekološka kmetija specializirana za pridelavo aronije in slamnika. Tradicionalni slovenski izdelki z naše družinske kmetije v Prekmurju.',
+    description: 'Ekološka kmetija specializirana za pridelavo. Tradicionalni slovenski izdelki z naše družinske kmetije v Prekmurju.',
     url: 'https://kmetija-marosa.si',
     telephone: '+386 31 627 364',
     email: 'kmetija.marosa@gmail.com',

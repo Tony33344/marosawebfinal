@@ -567,7 +567,7 @@ export const slovenian = {
     story: {
       title: 'Naša zgodba',
       content1: 'Na naši družinski kmetiji na Melincih, na rodovitnih tleh Prekmurja, že več generacij združujemo tradicijo z inovacijami. Naše poslanstvo je ustvarjanje kakovostnih, naravnih izdelkov, ki odražajo naše spoštovanje do narave.',
-      content2: 'Specializiramo se za ekološko pridelavo aronije in slamnika, pri čemer uporabljamo trajnostne kmetijske metode, ki ohranjajo okolje za prihodnje generacije.',
+      content2: 'Specializiramo se za ekološko pridelavo, pri čemer uporabljamo trajnostne kmetijske metode, ki ohranjajo okolje za prihodnje generacije.',
       content3: 'Vsak izdelek, ki ga ustvarimo, je pričevanje naše zavezanosti kakovosti, zdravju in ohranjanju tradicionalnih kmetijskih praks.'
     },
     shop: {
