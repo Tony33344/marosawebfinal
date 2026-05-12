@@ -53,7 +53,6 @@ export function EditProductForm({ product, onClose, onSuccess }: EditProductForm
       
       // Fix case sensitivity for known folders
       cleanedUrl = cleanedUrl
-        .replace(/\/melisa(\/|$)/i, '/Melisa$1')
         .replace(/\/poprova meta\//i, '/Poprova meta/')
         .replace(/\/konopljino olje\//i, '/konopljino olje/');
       

@@ -92,6 +92,12 @@ export function getImageUrl(path: string, fallbackUrl: string = DEFAULT_FALLBACK
         storagePath = storagePath.substring(1);
       }
 
+      // Ensure lowercase melisa folder for Supabase bucket compatibility
+      storagePath = storagePath
+        .split('/')
+        .map(segment => segment.toLowerCase() === 'melisa' ? 'melisa' : segment)
+        .join('/');
+
       // Encode each segment so spaces and special characters are safe in the URL
       const encodedPath = storagePath
         .split('/')
@@ -107,8 +113,8 @@ export function getImageUrl(path: string, fallbackUrl: string = DEFAULT_FALLBACK
       const relativePath = path.substring(2);
       try {
         // First, normalize the path to handle case sensitivity issues
-        // This is especially important for paths like './images/melisa/1.jpg' vs './images/Melisa/1.jpg'
-        const normalizedPath = relativePath.replace(/\/melisa\//i, '/Melisa/');
+        // This is especially important for paths like './images/melisa/1.jpg' vs './images/melisa/1.jpg'
+        const normalizedPath = relativePath.replace(/\/melisa\//i, '/melisa/');
 
         // Encode the path to handle spaces and special characters
         const encodedPath = normalizedPath.split('/').map(segment => encodeURIComponent(segment)).join('/');
@@ -120,7 +126,7 @@ export function getImageUrl(path: string, fallbackUrl: string = DEFAULT_FALLBACK
         const baseUrl = window.location.origin;
 
         // Normalize the path to handle case sensitivity issues
-        const normalizedPath = relativePath.replace(/\/melisa\//i, '/Melisa/');
+        const normalizedPath = relativePath.replace(/\/melisa\//i, '/melisa/');
 
         // Encode the path to handle spaces and special characters
         // Special handling for paths with spaces - don't encode spaces in "paket 3.jpg" style filenames
@@ -144,7 +150,7 @@ export function getImageUrl(path: string, fallbackUrl: string = DEFAULT_FALLBACK
       const absolutePath = path.replace(/^\.\.\//, '/');
 
       // Normalize the path to handle case sensitivity issues
-      const normalizedPath = absolutePath.replace(/\/melisa\//i, '/Melisa/');
+      const normalizedPath = absolutePath.replace(/\/melisa\//i, '/melisa/');
 
       const baseUrl = window.location.origin;
 
@@ -177,12 +183,12 @@ export function getImageUrl(path: string, fallbackUrl: string = DEFAULT_FALLBACK
       let normalizedPath = cleanPath;
       console.log('Before normalization:', normalizedPath);
       
-      // Handle Melisa folder (should be capitalized)
+      // Handle melisa folder (lowercase for Supabase bucket)
       // This handles both '/melisa/' and 'melisa/' at the start of the path
       normalizedPath = normalizedPath
-        .replace(/^\/melisa\//i, '/Melisa/')
-        .replace(/(^|[^/])\/melisa\//i, '$1/Melisa/')
-        .replace(/(^|[^/])\/melisa($|\?|#)/i, '$1/Melisa$2');
+        .replace(/^\/melisa\//i, '/melisa/')
+        .replace(/(^|[^/])\/melisa\//i, '$1/melisa/')
+        .replace(/(^|[^/])\/melisa($|\?|#)/i, '$1/melisa$2');
       
       // Handle other known folders
       normalizedPath = normalizedPath
@@ -207,7 +213,7 @@ export function getImageUrl(path: string, fallbackUrl: string = DEFAULT_FALLBACK
               lowerSegment.includes('čaj')) {
             // Use the correct case for known folders
             if (lowerSegment === 'poprova meta') return 'Poprova meta';
-            if (lowerSegment === 'melisa') return 'Melisa';
+            if (lowerSegment === 'melisa') return 'melisa';
             if (lowerSegment === 'konopljino olje') return 'konopljino olje';
             return segment;
           }
@@ -254,7 +260,7 @@ export function getImageUrl(path: string, fallbackUrl: string = DEFAULT_FALLBACK
     const baseUrl = window.location.origin;
 
     // Normalize the path to handle case sensitivity issues
-    const normalizedPath = path.replace(/\/melisa\//i, '/Melisa/');
+    const normalizedPath = path.replace(/\/melisa\//i, '/melisa/');
 
     // Encode the path to handle spaces and special characters
     // Special handling for paths with spaces - don't encode spaces in "paket 3.jpg" style filenames
