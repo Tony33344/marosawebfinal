@@ -234,8 +234,10 @@ export function getImageUrl(path: string, fallbackUrl: string = DEFAULT_FALLBACK
 
     // If it's already a URL (http:// or https://), return it as is
     if (path.startsWith('http://') || path.startsWith('https://')) {
+      // Normalize melisa folder case even in full URLs (database may have capital M)
+      const normalizedPath = path.replace(/\/Melisa\//g, '/melisa/');
       // Ensure HTTPS for security
-      const secureUrl = path.replace(/^http:\/\//i, 'https://');
+      const secureUrl = normalizedPath.replace(/^http:\/\//i, 'https://');
 
       // Check if the domain is allowed
       const url = new URL(secureUrl);
