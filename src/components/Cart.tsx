@@ -431,7 +431,7 @@ export const Cart: React.FC = () => {
 
                   {hasShippingFee && (
                     <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded">
-                      {t('cart.freeShippingNote', 'Brezplačna dostava za naročila nad 30,00 €')}
+                      {t('cart.freeShippingNote', 'Brezplačna dostava za naročila nad 50,00 €')}
                     </div>
                   )}
 

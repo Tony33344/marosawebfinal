@@ -365,7 +365,7 @@ export const slovenian = {
     removeAriaLabel: 'Odstrani izdelek iz košarice',
     quantityAriaLabel: 'Količina izdelka',
     orderSummary: 'Povzetek naročila',
-    freeShippingNote: 'Brezplačna dostava za naročila nad 30€'
+    freeShippingNote: 'Brezplačna dostava za naročila nad 50€'
   },
   checkout: {
     title: 'Blagajna',

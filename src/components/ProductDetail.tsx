@@ -528,7 +528,7 @@ export function ProductDetail() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center text-center px-4">
         <h2 className="text-2xl font-bold mb-4 text-red-600">{error}</h2>
-        <Link to={`/?lang=${i18n.language}`} className="text-brown-600 hover:text-brown-700">
+        <Link to={`/?lang=${i18n.language}#izdelki`} className="text-brown-600 hover:text-brown-700">
           {t('products.backToHome', 'Back to Home')}
         </Link>
       </div>
@@ -543,7 +543,7 @@ export function ProductDetail() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-4">{t('products.notFound', 'Product not found')}</h2>
-          <Link to={`/?lang=${i18n.language}`} className="text-brown-600 hover:text-brown-700">
+          <Link to={`/?lang=${i18n.language}#izdelki`} className="text-brown-600 hover:text-brown-700">
             {t('products.backToHome', 'Back to Home')}
           </Link>
         </div>
@@ -618,7 +618,7 @@ export function ProductDetail() {
             {/* Navigation Bar */}
             <div className="flex items-center justify-between mb-8">
               {/* Back Button */}
-              <Link to={`/?lang=${i18n.language}`} className="inline-flex items-center text-brown-600 hover:text-brown-700 transition-colors">
+              <Link to={`/?lang=${i18n.language}#izdelki`} className="inline-flex items-center text-brown-600 hover:text-brown-700 transition-colors">
                 <ArrowLeft className="w-5 h-5 mr-2" />
                 {t('productDetailBackButton', 'Back to Products')}
               </Link>

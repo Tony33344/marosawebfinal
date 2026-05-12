@@ -680,7 +680,7 @@ export const CheckoutPage: React.FC = () => {
 
   // Shipping cost constants
   const SHIPPING_COST = 3.90;
-  const FREE_SHIPPING_THRESHOLD = 30.00;
+  const FREE_SHIPPING_THRESHOLD = 50.00;
 
   // Calculate if shipping is free
   const hasShippingFee = subtotalAfterDiscount < FREE_SHIPPING_THRESHOLD;

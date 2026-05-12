@@ -18,7 +18,7 @@ export const ENV = {
 // Shipping configuration
 export const SHIPPING = {
   cost: 3.90,
-  freeThreshold: 30.00,
+  freeThreshold: 50.00,
   countries: ['Slovenija', 'Hrvaška', 'Avstrija', 'Nemčija'],
   defaultCountry: 'Slovenija',
 };
