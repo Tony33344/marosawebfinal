@@ -4,6 +4,7 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 import { getSecureCorsHeaders, handleCorsPreflightRequest } from '../secure-cors-headers.ts';
+import { rateLimitOk, clientIp } from '../rate-limit.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
 const ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
@@ -75,6 +76,19 @@ serve(async (req) => {
 
     // ---------- clients ----------
     const serviceClient = createClient(SUPABASE_URL, SERVICE_KEY);
+
+    // ---------- rate limiting ----------
+    // 5 orders/IP/hour + 3 orders/email/day — caps fake-order spam and
+    // the confirmation-email bombing vector.
+    const ip = clientIp(req);
+    const emailKey = String(customer.email).toLowerCase().trim();
+    const [ipOk, emailOk] = await Promise.all([
+      rateLimitOk(serviceClient, `order:ip:${ip}`, 5, 3600),
+      rateLimitOk(serviceClient, `order:email:${emailKey}`, 3, 86400),
+    ]);
+    if (!ipOk || !emailOk) {
+      return fail('Too many orders. Please try again later.', 429, corsHeaders);
+    }
     const authClient = createClient(SUPABASE_URL, ANON_KEY, {
       global: { headers: { Authorization: req.headers.get('Authorization') ?? '' } },
     });

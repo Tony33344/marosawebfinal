@@ -56,3 +56,4 @@ tests/reports/screenshots/
 *.log
 
 test-results/
+*.tsbuildinfo

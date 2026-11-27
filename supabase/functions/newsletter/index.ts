@@ -4,6 +4,7 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 import { getSecureCorsHeaders, handleCorsPreflightRequest, isAllowedOrigin } from '../secure-cors-headers.ts';
+import { rateLimitOk, clientIp } from '../rate-limit.ts';
 import { generateConfirmationEmailHtml, generateConfirmationEmailText } from './confirmationEmail.ts';
 import { generateWelcomeEmailHtml, generateWelcomeEmailText } from './welcomeEmail.ts';
 
@@ -59,6 +60,12 @@ serve(async (req) => {
       const { firstName, source = 'website', preferences, language = 'sl' } = payload;
       if (!email || !/\S+@\S+\.\S+/.test(email)) {
         return respond({ success: false, message: 'Invalid email' });
+      }
+
+      // 5 subscribes/IP/hour — caps mass-subscribing victim addresses
+      // (per-email dedup is already handled by the unique constraint).
+      if (!await rateLimitOk(supabase, `newsletter:ip:${clientIp(req)}`, 5, 3600)) {
+        return respond({ success: false, message: 'rate_limited' });
       }
 
       const confirmationToken = generateToken();

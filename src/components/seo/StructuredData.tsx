@@ -1,6 +1,9 @@
 import React from 'react';
 import { useFeatureFlag } from '../../hooks/useFeatureFlag';
 
+// Escapes '<' so JSON-LD content can't break out of the script tag.
+const safeJsonLd = (data: unknown) => JSON.stringify(data).replace(/</g, '\\u003c');
+
 interface OrganizationData {
   name: string;
   url: string;
@@ -67,7 +70,7 @@ export const OrganizationSchema: React.FC<{ data: OrganizationData }> = ({ data 
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
     />
   );
 };
@@ -116,7 +119,7 @@ export const LocalBusinessSchema: React.FC = () => {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
     />
   );
 };
@@ -154,7 +157,7 @@ export const ProductSchema: React.FC<{ product: ProductData }> = ({ product }) =
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
     />
   );
 };
@@ -179,7 +182,7 @@ export const BreadcrumbSchema: React.FC<{ items: BreadcrumbItem[] }> = ({ items 
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
     />
   );
 };
@@ -206,7 +209,7 @@ export const FAQSchema: React.FC<{ faqs: FAQItem[] }> = ({ faqs }) => {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
     />
   );
 };
@@ -233,7 +236,7 @@ export const WebSiteSchema: React.FC = () => {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
     />
   );
 };
@@ -279,7 +282,7 @@ export const RecipeSchema: React.FC<{
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
     />
   );
 };

@@ -289,3 +289,14 @@ REVOKE EXECUTE ON FUNCTION public.generate_random_token() FROM PUBLIC;
 DROP POLICY IF EXISTS orders_insert ON public.orders;
 CREATE POLICY orders_insert ON public.orders
   FOR INSERT WITH CHECK (is_admin());
+
+-- ================= RATE LIMITING =================
+-- Events written by edge functions via service role only (RLS on, no policies).
+CREATE TABLE IF NOT EXISTS public.rate_limit_events (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  bucket text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS rate_limit_events_bucket_time_idx
+  ON public.rate_limit_events (bucket, created_at);
+ALTER TABLE public.rate_limit_events ENABLE ROW LEVEL SECURITY;
