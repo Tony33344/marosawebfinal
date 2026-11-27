@@ -225,3 +225,38 @@ $$;
 
 REVOKE ALL ON FUNCTION public.validate_discount_code(text, numeric) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.validate_discount_code(text, numeric) TO anon, authenticated;
+
+-- 9. Prevent privilege escalation: profiles_update allows users to update
+-- their own row, which would let them set is_admin=true on themselves.
+-- This trigger silently reverts is_admin changes made by non-admins
+-- (service_role and existing admins can still manage the flag).
+CREATE OR REPLACE FUNCTION public.protect_is_admin_flag()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    IF NEW.is_admin IS TRUE AND auth.role() <> 'service_role' AND NOT public.is_admin() THEN
+      NEW.is_admin := false;
+    END IF;
+    RETURN NEW;
+  END IF;
+  IF NEW.is_admin IS DISTINCT FROM OLD.is_admin
+     AND auth.role() <> 'service_role'
+     AND NOT public.is_admin() THEN
+    NEW.is_admin := OLD.is_admin;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS profiles_protect_is_admin_ins ON public.profiles;
+DROP TRIGGER IF EXISTS profiles_protect_is_admin_upd ON public.profiles;
+CREATE TRIGGER profiles_protect_is_admin_ins
+  BEFORE INSERT ON public.profiles
+  FOR EACH ROW EXECUTE FUNCTION public.protect_is_admin_flag();
+CREATE TRIGGER profiles_protect_is_admin_upd
+  BEFORE UPDATE ON public.profiles
+  FOR EACH ROW EXECUTE FUNCTION public.protect_is_admin_flag();
