@@ -300,3 +300,14 @@ CREATE TABLE IF NOT EXISTS public.rate_limit_events (
 CREATE INDEX IF NOT EXISTS rate_limit_events_bucket_time_idx
   ON public.rate_limit_events (bucket, created_at);
 ALTER TABLE public.rate_limit_events ENABLE ROW LEVEL SECURITY;
+
+-- ================= SECURITY DEFINER search_path PINNING =================
+-- Unpinned search_path on definer functions allows object-name shadowing
+-- (search_path hijack). Pin every definer function to public explicitly.
+ALTER FUNCTION public.is_admin() SET search_path = public;
+ALTER FUNCTION public.get_next_order_number() SET search_path = public;
+ALTER FUNCTION public.handle_new_user() SET search_path = public;
+ALTER FUNCTION public.sync_user_admin_status() SET search_path = public;
+ALTER FUNCTION public.execute_sql(text) SET search_path = public;
+ALTER FUNCTION public.create_analytics_events_table() SET search_path = public;
+ALTER FUNCTION public.create_analytics_daily_metrics_table() SET search_path = public;
