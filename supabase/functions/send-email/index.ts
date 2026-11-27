@@ -97,6 +97,12 @@ serve(async (req: Request) => {
         body: JSON.stringify(scriptData),
       });
       const text = await scriptRes.text();
+      const denied = !scriptRes.ok
+        || /Zugriff verweigert|Access denied|Sie benötigen Zugriff|requesting_access|ServiceUnavailable/i.test(text);
+      if (denied) {
+        console.error('Email service denied/failed:', scriptRes.status, text.slice(0, 200));
+        return respond({ success: false, error: `Email service error (HTTP ${scriptRes.status})` }, 502);
+      }
       let parsed: unknown = text;
       try { parsed = JSON.parse(text); } catch { /* non-JSON */ }
 
@@ -125,6 +131,12 @@ serve(async (req: Request) => {
         }),
       });
       const text = await scriptRes.text();
+      const denied = !scriptRes.ok
+        || /Zugriff verweigert|Access denied|Sie benötigen Zugriff|requesting_access|ServiceUnavailable/i.test(text);
+      if (denied) {
+        console.error('Email service denied/failed:', scriptRes.status, text.slice(0, 200));
+        return respond({ success: false, error: `Email service error (HTTP ${scriptRes.status})` }, 502);
+      }
       let parsed: unknown = text;
       try { parsed = JSON.parse(text); } catch { /* non-JSON */ }
 

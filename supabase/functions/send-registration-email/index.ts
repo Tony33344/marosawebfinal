@@ -69,6 +69,10 @@ serve(async (req) => {
     });
 
     const result = await res.json().catch(() => ({}));
+    if (!res.ok || result?.success === false) {
+      console.error('Welcome email send failed:', res.status, JSON.stringify(result).slice(0, 200));
+      return respond({ success: false, message: 'Email delivery failed' }, 502);
+    }
     return respond({ success: true, result });
   } catch (error: any) {
     console.error('send-registration-email error:', error);

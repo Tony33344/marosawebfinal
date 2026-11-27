@@ -223,7 +223,7 @@ export const MarosaUPNQRCode: React.FC<{
   return (
     <UPNQRCode
       recipientName="Kmetija Maroša"
-      recipientIBAN="SI56 0510 0801 5831 183" // Replace with actual IBAN
+      recipientIBAN="SI56 0700 0000 4161 875"
       recipientReference={`SI00 ${orderId}`}
       amount={amount}
       purpose={purpose || `Naročilo ${orderId}`}
