@@ -4,8 +4,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useStripe, useElements } from '@stripe/react-stripe-js';
-import { Product, PackageOption, GiftItem } from '../types';
+import { Product, PackageOption } from '../types';
 import { CheckoutDisplayItem, CheckoutStep, AuthSubState, Discount } from '../types/checkout';
 import { SHIPPING, PAYMENT_METHODS } from '../config/appConfig';
 
@@ -19,10 +18,8 @@ import { StripePaymentForm } from '../components/StripePaymentForm';
 import { ShippingCostNotification } from '../components/ShippingCostNotification';
 
 // Utility functions
-import { generateUUID } from '../utils/helpers';
 import { useErrorHandler } from '../utils/errorMonitoring';
-import { sendOrderConfirmationEmail } from '../utils/emailService';
-import { validateSlovenianData, formatSlovenianPhoneNumber } from '../utils/slovenianValidation';
+import { validateCheckoutData } from '../utils/slovenianValidation';
 
 /**
  * MultiStepCheckoutPage - A two-step checkout process that maintains the same design and functionality
@@ -33,8 +30,6 @@ export const MultiStepCheckoutPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, session, loading: authLoading, signInWithPassword, signUp, checkEmailExists, signOut } = useAuth();
-  const stripe = useStripe();
-  const elements = useElements();
   const errorHandler = useErrorHandler({ source: 'MultiStepCheckoutPage' });
 
   // State for cart items and loading
@@ -79,7 +74,6 @@ export const MultiStepCheckoutPage: React.FC = () => {
 
   // Payment states
   const [paymentMethod, setPaymentMethod] = useState<string>(PAYMENT_METHODS.bankTransfer);
-  const [stripePaymentComplete, setStripePaymentComplete] = useState(false);
   const [stripeError, setStripeError] = useState<string | null>(null);
 
   // Discount states
@@ -298,16 +292,16 @@ export const MultiStepCheckoutPage: React.FC = () => {
         newFieldErrors.postalCode = t('checkout.errors.postalCodeRequired', 'Poštna številka je obvezna');
       }
 
-      // Validate Slovenian data format
-      const dataValidation = validateSlovenianData({
+      // Country-aware validation (Slovenian rules only for Slovenija)
+      const dataValidation = validateCheckoutData({
         name: formData.name,
         postalCode: formData.postalCode,
         phone: formData.phone,
         city: formData.city,
-        address: formData.address
+        address: formData.address,
+        country: formData.country
       });
 
-      // Add Slovenian validation errors
       if (dataValidation.errors.name) {
         newFieldErrors.name = dataValidation.errors.name;
       }
@@ -337,6 +331,46 @@ export const MultiStepCheckoutPage: React.FC = () => {
   // Handle previous step
   const handlePrevStep = () => {
     setCurrentStep(prev => Math.max(prev - 1, 1));
+  };
+
+  // Create the order server-side. All pricing is recomputed in the
+  // create-order edge function — the client never sends prices.
+  const submitOrder = async (): Promise<{ orderId: string; orderNumber: number; totalPrice: number }> => {
+    const { data, error } = await supabase.functions.invoke('create-order', {
+      body: {
+        customer: {
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.address,
+          city: formData.city,
+          postalCode: formData.postalCode,
+          country: formData.country,
+          notes: formData.notes,
+        },
+        items: cart.map(item => ({
+          productId: item.productId,
+          packageOptionId: item.packageOptionId,
+          quantity: item.quantity,
+        })),
+        gifts,
+        discountCode: appliedDiscount?.code ?? null,
+        paymentMethod,
+        giftOptionId,
+        giftProduct: giftProductId && giftProductPackageId
+          ? { productId: giftProductId, packageOptionId: giftProductPackageId }
+          : null,
+        lang: i18n.language,
+      },
+    });
+
+    if (error) {
+      // FunctionsHttpError wraps non-2xx responses; extract the real message
+      const detail = (error as any)?.context?.error || error.message;
+      throw new Error(typeof detail === 'string' ? detail : 'Order creation failed');
+    }
+    if (!data?.orderId) throw new Error('Order creation returned no data');
+    return data;
   };
 
   // Handle form submission
@@ -371,16 +405,16 @@ export const MultiStepCheckoutPage: React.FC = () => {
       newFieldErrors.postalCode = t('checkout.errors.postalCodeRequired', 'Poštna številka je obvezna');
     }
 
-    // Validate Slovenian data format
-    const dataValidation = validateSlovenianData({
+    // Country-aware validation (Slovenian rules only for Slovenija)
+    const dataValidation = validateCheckoutData({
       name: formData.name,
       postalCode: formData.postalCode,
       phone: formData.phone,
       city: formData.city,
-      address: formData.address
+      address: formData.address,
+      country: formData.country
     });
 
-    // Add Slovenian validation errors
     if (dataValidation.errors.name) {
       newFieldErrors.name = dataValidation.errors.name;
     }
@@ -410,280 +444,26 @@ export const MultiStepCheckoutPage: React.FC = () => {
       return;
     }
 
-    if (paymentMethod === PAYMENT_METHODS.creditCard && !stripePaymentComplete) {
-      setError(t('checkout.errors.incompletePayment', 'Please complete the payment information.'));
+    if (paymentMethod === PAYMENT_METHODS.creditCard) {
+      // Card payments are completed via the "Pay Now" button which creates
+      // the order first (createOrder) and then confirms the Stripe payment.
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      // Ensure we have the latest user ID right before submission
-      const { data: { user: currentUser } = { user: null } } = await supabase.auth.getUser();
-      const currentUserId = currentUser?.id || null;
-      const isGuest = !currentUserId;
+      const newOrder = await submitOrder();
 
-      // 1. Find or Create Profile
-      let profileId: string | null = null;
-
-      if (currentUserId) {
-        // User is logged in
-        const { data: userProfile, error: profileFetchError } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('id', currentUserId)
-          .maybeSingle();
-
-        if (profileFetchError) throw new Error(`Profile lookup failed: ${profileFetchError.message}`);
-
-        if (userProfile) {
-          profileId = userProfile.id;
-          console.log('Found profile for logged-in user:', profileId);
-        }
-      }
-
-      if (!profileId) {
-        // Create a new profile for guest or new user
-        console.log('Creating new profile for email:', formData.email);
-        const guestUUID = generateUUID();
-        const { data: newProfile, error: insertProfileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: guestUUID,
-            username: formData.email,
-            full_name: formData.name,
-            email: formData.email,
-            telephone_nr: formData.phone,
-            default_shipping_address: JSON.stringify({
-              address: formData.address,
-              city: formData.city,
-              postalCode: formData.postalCode,
-              country: formData.country,
-            }),
-          })
-          .select('id')
-          .single();
-
-        if (insertProfileError) throw new Error(`Profile creation failed: ${insertProfileError.message}`);
-        if (!newProfile) throw new Error('Profile creation returned no data.');
-        profileId = newProfile.id;
-        console.log('Created new profile:', profileId);
-      }
-
-      if (!profileId) {
-        throw new Error('Failed to obtain profile ID.');
-      }
-
-      // 2. Prepare Order Data
-      const orderItems = cartItemsDetails.map((item: CheckoutDisplayItem) => {
-        if (item.isGift) {
-          // Handle gift items with detailed information
-          const giftDetails = item.giftDetails || {};
-
-          // Create a detailed description for the gift package
-          let detailedDescription = `Darilni paket: ${item.name}\n`;
-
-          // Add recipient information
-          if (giftDetails.recipient_name) {
-            detailedDescription += `Prejemnik: ${giftDetails.recipient_name}\n`;
-          }
-
-          if (giftDetails.recipient_message) {
-            detailedDescription += `Sporočilo: ${giftDetails.recipient_message}\n`;
-          }
-
-          // Add gift contents information
-          if (giftDetails.products && Array.isArray(giftDetails.products)) {
-            detailedDescription += `\nVsebina darila:\n`;
-            giftDetails.products.forEach((product: any, index: number) => {
-              detailedDescription += `${index + 1}. ${product.name} (${product.package_option?.description || 'Standardna pakiranje'})\n`;
-            });
-          }
-
-          // Add packaging information
-          if (giftDetails.packaging) {
-            detailedDescription += `\nEmbalaža: ${giftDetails.packaging}\n`;
-          }
-
-          return {
-            product_id: item.id,
-            product_name: `${item.name} - Darilo`,
-            package_option_id: item.packageOption.uniq_id,
-            package_description: detailedDescription,
-            quantity: item.quantity,
-            price_per_unit: item.packageOption.price,
-            line_total: item.packageOption.price * item.quantity,
-            is_gift: true,
-            gift_details: item.giftDetails ? JSON.stringify(item.giftDetails) : null
-          };
-        } else {
-          // Handle regular items
-          return {
-            product_id: item.id,
-            product_name: item[`name_${i18n.language}` as keyof Product] || item.name,
-            package_option_id: item.packageOption.uniq_id,
-            package_description: item.packageOption.weight || item.packageOption.description || '',
-            quantity: item.quantity,
-            price_per_unit: item.packageOption.price,
-            line_total: item.packageOption.price * item.quantity,
-            is_gift: false
-          };
-        }
-      });
-
-      console.log('Order items prepared for database:', JSON.stringify(orderItems));
-
-      // Create shipping address object
-      const shippingAddress = {
-        name: formData.name,
-        address: formData.address,
-        city: formData.city,
-        postalCode: formData.postalCode,
-        country: formData.country,
-        phone: formData.phone,
-        email: formData.email,
-      };
-
-      // 3. Create Order
-      console.log('Creating order with profile_id:', profileId, 'user_id:', currentUserId, 'is_guest:', isGuest);
-
-      // Include shipping and subtotal information in the notes field
-      const shippingInfo = hasShippingFee
-        ? `[${t('orders.shipping', 'Poštnina')}: €${shippingCost.toFixed(2)}]`
-        : `[${t('checkout.freeShipping', 'Brezplačna dostava')}]`;
-
-      const subtotalInfo = `[${t('orders.subtotal', 'Vmesna vsota')}: €${subtotal.toFixed(2)}]`;
-      const orderNotes = `${formData.notes || ''} ${subtotalInfo} ${shippingInfo}`.trim();
-
-      // Add all columns that exist in the database
-      const orderData = {
-        profile_id: profileId,
-        total_price: total,
-        status: 'pending',
-        items: JSON.stringify(orderItems),
-        shipping_address: JSON.stringify(shippingAddress),
-        notes: orderNotes,
-        payment_method: paymentMethod,
-        is_guest_order: isGuest,
-        shipping_cost: hasShippingFee ? shippingCost : 0,
-        discount_amount: discountAmount || 0,
-      };
-
-      console.log('Attempting to create order with data:', orderData);
-
-      // Validate required fields
-      if (!shippingAddress.name || !shippingAddress.email || !shippingAddress.address) {
-        console.error('Missing required customer information', shippingAddress);
-        throw new Error('Missing required customer information');
-      }
-
-      if (!paymentMethod) {
-        console.error('Payment method is required');
-        throw new Error('Payment method is required');
-      }
-
-      if (!orderItems || orderItems.length === 0) {
-        console.error('Cart is empty');
-        throw new Error('Cart is empty');
-      }
-
-      // Get next order number directly from function
-      const { data: orderNumberData, error: orderNumberError } = await supabase
-        .rpc('get_next_order_number');
-
-      if (orderNumberError) {
-        console.error('Failed to get order number:', orderNumberError);
-        throw new Error('Failed to generate order number');
-      }
-
-      const nextOrderNumber = orderNumberData;
-      console.log('Got next order number:', nextOrderNumber);
-
-      // Add order number to order data
-      const orderDataWithNumber = {
-        ...orderData,
-        order_number: nextOrderNumber
-      };
-
-      // Add anon key to ensure guest orders work
-      const { data: newOrder, error: orderError } = await supabase
-        .from('orders')
-        .insert(orderDataWithNumber)
-        .select('id, order_number')
-        .single();
-
-      console.log('Order creation result:', { newOrder, orderError });
-
-      if (orderError) throw new Error(`Order creation failed: ${orderError.message}`);
-      if (!newOrder) throw new Error('Order creation returned no data.');
-
-      console.log('Order created successfully:', newOrder.id);
-
-      // 4. Post-Order Actions
       // Store order ID in session storage before navigation
-      sessionStorage.setItem('lastSuccessfulOrder', newOrder.id);
+      sessionStorage.setItem('lastSuccessfulOrder', newOrder.orderId);
       sessionStorage.setItem('clearCartAfterOrder', 'true');
-
-      // Send order confirmation email - only one call to send both customer and admin emails
-      try {
-        console.log('Sending order confirmation email to:', formData.email);
-
-        // Format order items specifically for email
-        const emailOrderItems = orderItems.map(item => ({
-          product_name: item.product_name,
-          package_description: item.package_description,
-          quantity: item.quantity,
-          price_per_unit: item.price_per_unit,
-          line_total: item.line_total
-        }));
-
-        console.log('Email order items:', JSON.stringify(emailOrderItems));
-
-        // Get localized payment method name
-        const getLocalizedPaymentMethod = (method: string) => {
-          switch (method) {
-            case PAYMENT_METHODS.creditCard:
-              return t('checkout.paymentOptions.creditCard', 'Kreditna kartica (Stripe)');
-            case PAYMENT_METHODS.payOnDelivery:
-              return t('checkout.paymentOptions.payOnDelivery', 'Plačilo po povzetju');
-            case PAYMENT_METHODS.bankTransfer:
-              return t('checkout.paymentOptions.bankTransfer', 'Neposredno bančno nakazilo');
-            default:
-              return method;
-          }
-        };
-
-        // Make a single call to send both customer and admin emails
-        const emailResult = await sendOrderConfirmationEmail(
-          newOrder.id,
-          formData.email,
-          formData.name,
-          {
-            items: emailOrderItems,
-            total: total,
-            shippingAddress: shippingAddress,
-            paymentMethod: getLocalizedPaymentMethod(paymentMethod)
-          },
-          newOrder.order_number // Pass the order number for display
-        );
-
-        if (emailResult.success) {
-          console.log('Order confirmation email sent successfully');
-        } else {
-          console.error('Failed to send order confirmation email:', emailResult.message);
-          // Don't block the checkout process if email fails
-        }
-      } catch (emailError) {
-        console.error('Exception sending order confirmation email:', emailError);
-        // Don't block the checkout process if email fails
-      }
 
       // Clear cart
       clearCart();
 
       // Navigate to success page with order ID
-      const successUrl = `/order-success?order_id=${newOrder.id}&lang=${i18n.language}`;
-      console.log('Redirecting to success page:', successUrl);
+      const successUrl = `/order-success?order_id=${newOrder.orderId}&lang=${i18n.language}`;
       navigate(successUrl, { replace: true });
     } catch (err: any) {
       console.error('Error processing order:', err);
@@ -982,28 +762,40 @@ export const MultiStepCheckoutPage: React.FC = () => {
                         stripeError={stripeError}
                       />
 
-                      {/* Credit Card Payment Form */}
+                      {/* Credit Card Payment Form — creates the order first,
+                          then confirms the Stripe payment against it */}
                       {paymentMethod === PAYMENT_METHODS.creditCard && (
                         <div className="mt-6">
                           <StripePaymentForm
-                            amount={total}
-                            onSuccess={(paymentId) => {
-                              setStripePaymentComplete(true);
+                            createOrder={async () => {
+                              // Validate shipping fields before paying
+                              const errs: Record<string, string> = {};
+                              const v = validateCheckoutData({
+                                name: formData.name,
+                                postalCode: formData.postalCode,
+                                phone: formData.phone,
+                                city: formData.city,
+                                address: formData.address,
+                                country: formData.country
+                              });
+                              Object.assign(errs, v.errors);
+                              if (Object.keys(errs).length > 0) {
+                                setFieldErrors(errs);
+                                setCurrentStep(1);
+                                throw new Error(t('checkout.errors.invalidShipping', 'Please check your shipping information.'));
+                              }
+                              return submitOrder();
+                            }}
+                            onSuccess={(orderId) => {
+                              sessionStorage.setItem('lastSuccessfulOrder', orderId);
+                              sessionStorage.setItem('clearCartAfterOrder', 'true');
+                              clearCart();
+                              navigate(`/order-success?order_id=${orderId}&lang=${i18n.language}`, { replace: true });
                             }}
                             onError={(errorMsg) => {
                               setStripeError(errorMsg);
                             }}
                             disabled={isSubmitting}
-                            orderId={null}
-                            shippingAddress={{
-                              name: formData.name,
-                              address: formData.address,
-                              city: formData.city,
-                              postalCode: formData.postalCode,
-                              country: formData.country,
-                              phone: formData.phone,
-                              email: formData.email
-                            }}
                           />
                         </div>
                       )}
@@ -1018,25 +810,28 @@ export const MultiStepCheckoutPage: React.FC = () => {
                           {t('checkout.back', 'Nazaj')}
                         </button>
 
-                        <button
-                          type="submit"
-                          disabled={
-                            isSubmitting ||
-                            (cart.length === 0 && gifts.length === 0) ||
-                            loadingDetails ||
-                            !paymentMethod ||
-                            checkingEmail ||
-                            authLoading ||
-                            (paymentMethod === PAYMENT_METHODS.creditCard && !stripePaymentComplete)
-                          }
-                          className="py-3 px-4 bg-brown-600 text-white rounded-md hover:bg-brown-700 focus:outline-none focus:ring-2 focus:ring-brown-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                          {isSubmitting ? (
-                            <span>{t('checkout.processing', 'Obdelava...')}</span>
-                          ) : (
-                            <span>{t('checkout.placeOrder', 'Oddaj naročilo')}</span>
-                          )}
-                        </button>
+                        {/* For card payments the Stripe "Pay Now" button
+                            completes the flow — no separate submit needed */}
+                        {paymentMethod !== PAYMENT_METHODS.creditCard && (
+                          <button
+                            type="submit"
+                            disabled={
+                              isSubmitting ||
+                              (cart.length === 0 && gifts.length === 0) ||
+                              loadingDetails ||
+                              !paymentMethod ||
+                              checkingEmail ||
+                              authLoading
+                            }
+                            className="py-3 px-4 bg-brown-600 text-white rounded-md hover:bg-brown-700 focus:outline-none focus:ring-2 focus:ring-brown-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          >
+                            {isSubmitting ? (
+                              <span>{t('checkout.processing', 'Obdelava...')}</span>
+                            ) : (
+                              <span>{t('checkout.placeOrder', 'Oddaj naročilo')}</span>
+                            )}
+                          </button>
+                        )}
                       </div>
                     </>
                   )}

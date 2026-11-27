@@ -1,86 +1,51 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 
 interface StripePaymentFormProps {
-  amount: number;
-  onSuccess: (paymentIntentId: string) => void;
+  // Creates the order server-side and returns its id. Called when the user
+  // clicks "Pay Now" — the order must exist before a payment intent is made.
+  createOrder: () => Promise<{ orderId: string; orderNumber?: number; totalPrice?: number }>;
+  onSuccess: (orderId: string) => void;
   onError: (error: string) => void;
   disabled?: boolean;
-  orderId?: string;
-  shippingAddress?: any; // Add shipping address prop
 }
 
 export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
-  amount,
+  createOrder,
   onSuccess,
   onError,
   disabled = false,
-  orderId,
-  shippingAddress
 }) => {
-  const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
+  const { t } = useTranslation();
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
   const [cardError, setCardError] = useState<string | null>(null);
 
-  // Function to handle redirection after successful payment
-  const redirectToSuccessPage = (paymentIntentId: string) => {
-    // Store payment information in session storage
-    sessionStorage.setItem('stripe_payment_id', paymentIntentId);
-    sessionStorage.setItem('stripe_payment_amount', amount.toString());
-    sessionStorage.setItem('stripe_payment_used', 'true');
-    sessionStorage.setItem('clearCartAfterOrder', 'true');
-
-    // Store shipping address if available
-    if (shippingAddress) {
-      console.log('Storing shipping address in session storage:', shippingAddress);
-      sessionStorage.setItem('stripe_shipping_address', JSON.stringify(shippingAddress));
-    }
-
-    // Create a temporary order in session storage
-    const tempOrder = {
-      id: `temp-${Date.now()}`,
-      payment_id: paymentIntentId,
-      amount: amount,
-      created_at: new Date().toISOString()
-    };
-
-    // Store the temporary order in session storage
-    sessionStorage.setItem('temp_order', JSON.stringify(tempOrder));
-
-    // Small delay to ensure session storage is updated before navigation
-    setTimeout(() => {
-      // Navigate to the success page
-      navigate(`/order-success?lang=${i18n.language}&payment_id=${paymentIntentId}`);
-    }, 100);
-  };
-
   // Track if there's an in-flight payment to prevent duplicate submissions
   const [hasInFlightPayment, setHasInFlightPayment] = useState(false);
+
+  // Cache order + PI so a retry after a declined/incomplete card reuses the
+  // same order instead of creating a duplicate `awaiting_payment` order.
+  const pendingRef = useRef<{ orderId: string; clientSecret: string } | null>(null);
 
   const handleSubmit = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
 
     // Prevent multiple submissions
     if (hasInFlightPayment || isProcessing) {
-      console.log('Payment already in progress, ignoring additional click');
       return;
     }
 
     if (!stripe || !elements) {
-      console.error('Stripe.js has not loaded yet');
       setCardError('Stripe is not initialized. Please refresh the page and try again.');
       return;
     }
 
     const cardElement = elements.getElement(CardElement);
     if (!cardElement) {
-      console.error('Card element not found');
       setCardError('Card element not found. Please refresh the page and try again.');
       return;
     }
@@ -90,53 +55,31 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
     setCardError(null);
 
     try {
-      // Check if we've recently had a failed payment intent creation
-      // to avoid hammering the edge function with repeated failures
-      const lastFailedAttempt = localStorage.getItem('last_payment_intent_failure');
-      const now = Date.now();
+      let orderId: string;
+      let clientSecret: string;
 
-      if (lastFailedAttempt) {
-        const failureTime = parseInt(lastFailedAttempt, 10);
-        const timeSinceFailure = now - failureTime;
+      if (pendingRef.current) {
+        ({ orderId, clientSecret } = pendingRef.current);
+      } else {
+        // 1. Create the order first — server-side pricing, real row in `orders`
+        const order = await createOrder();
+        orderId = order.orderId;
 
-        // If we've had a failure in the last 5 minutes, show an error
-        if (timeSinceFailure < 5 * 60 * 1000) { // 5 minutes
-          console.warn('Avoiding payment intent creation due to recent failure');
-          throw new Error(t('checkout.paymentTemporarilyUnavailable', 'Payment processing is temporarily unavailable. Please try again in a few minutes.'));
+        // 2. Create a payment intent bound to that order (amount set server-side)
+        const { data: paymentIntent, error: intentError } = await supabase.functions.invoke('create-payment-intent', {
+          body: { orderId }
+        });
+
+        if (intentError || !paymentIntent?.clientSecret) {
+          throw new Error(intentError?.message || t('checkout.paymentError', 'Failed to create payment'));
         }
+        clientSecret = paymentIntent.clientSecret;
+        pendingRef.current = { orderId, clientSecret };
       }
 
-      // Create payment intent on the server
-      console.log('Creating payment intent for amount:', amount);
-      const { data: paymentIntent, error: intentError, status } = await supabase.functions.invoke('create-payment-intent', {
-        body: {
-          amount: Math.round(amount * 100), // Convert to cents
-          currency: 'eur',
-          orderId: orderId
-        }
-      });
-
-      // Check for errors in the payment intent response
-      if (intentError) {
-        console.error('Intent error:', intentError);
-        // Store the failure time to avoid repeated calls
-        localStorage.setItem('last_payment_intent_failure', now.toString());
-        throw new Error(intentError.message || t('checkout.paymentError', 'Failed to create payment'));
-      }
-
-      // Clear any stored failure on success
-      localStorage.removeItem('last_payment_intent_failure');
-
-      if (!paymentIntent || !paymentIntent.clientSecret) {
-        console.error('No payment intent or client secret returned:', paymentIntent);
-        throw new Error(t('checkout.paymentError', 'Failed to create payment: No client secret returned'));
-      }
-
-      // Confirm the payment with the client secret
-
-      // Confirm the payment with the card element
+      // 3. Confirm the payment with the card element (handles 3DS)
       const { error: paymentError, paymentIntent: confirmedIntent } = await stripe.confirmCardPayment(
-        paymentIntent.clientSecret,
+        clientSecret,
         {
           payment_method: {
             card: cardElement,
@@ -144,55 +87,18 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
         }
       );
 
-      // Check for errors in the payment confirmation
-
       if (paymentError) {
-        console.error('Payment confirmation error:', paymentError);
         throw new Error(paymentError.message || t('checkout.paymentFailed', 'Payment failed'));
       }
 
-      if (!confirmedIntent) {
-        console.error('No confirmed intent returned');
-        throw new Error(t('checkout.paymentError', 'No payment confirmation returned'));
+      if (!confirmedIntent || confirmedIntent.status !== 'succeeded') {
+        throw new Error(t('checkout.paymentNotCompleted', `Payment not completed. Status: ${confirmedIntent?.status ?? 'unknown'}`));
       }
 
-      if (confirmedIntent.status === 'succeeded') {
-        // Store the payment ID in session storage as a backup
-        sessionStorage.setItem('stripe_payment_id', confirmedIntent.id);
-        sessionStorage.setItem('stripe_payment_amount', amount.toString());
-        sessionStorage.setItem('stripe_payment_used', 'true');
-
-        // Call the success callback
-        onSuccess(confirmedIntent.id);
-
-        // Redirect to the success page
-        redirectToSuccessPage(confirmedIntent.id);
-      } else if (confirmedIntent.status === 'requires_action' || confirmedIntent.status === 'requires_confirmation') {
-        // Handle 3D Secure or other additional authentication steps
-        const { error, paymentIntent: updatedIntent } = await stripe.confirmCardPayment(paymentIntent.clientSecret);
-
-        if (error) {
-          throw new Error(error.message || t('checkout.paymentFailed', 'Payment authentication failed'));
-        }
-
-        if (updatedIntent.status === 'succeeded') {
-          sessionStorage.setItem('stripe_payment_id', updatedIntent.id);
-          sessionStorage.setItem('stripe_payment_amount', amount.toString());
-          sessionStorage.setItem('stripe_payment_used', 'true');
-
-          // Call the success callback
-          onSuccess(updatedIntent.id);
-
-          // Redirect to the success page
-          redirectToSuccessPage(updatedIntent.id);
-        } else {
-          throw new Error(t('checkout.paymentNotCompleted', 'Payment not completed after authentication'));
-        }
-      } else {
-        throw new Error(t('checkout.paymentNotCompleted', `Payment not completed. Status: ${confirmedIntent.status}`));
-      }
+      // 4. Order exists + payment succeeded — the webhook marks it paid.
+      pendingRef.current = null;
+      onSuccess(orderId);
     } catch (error: any) {
-      console.error('Payment error:', error);
       setCardError(error.message || t('checkout.paymentProcessingError', 'Error processing payment'));
       onError(error.message || t('checkout.paymentProcessingError', 'Error processing payment'));
     } finally {

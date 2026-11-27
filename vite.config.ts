@@ -19,6 +19,10 @@ export default defineConfig({
       port: 5173,
     },
   },
+  // Strip console.* and debugger from production bundles
+  esbuild: {
+    drop: ['console', 'debugger'],
+  },
   build: {
     outDir: 'dist',
     rollupOptions: {

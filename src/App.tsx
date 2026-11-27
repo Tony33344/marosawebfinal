@@ -18,9 +18,6 @@ import { AboutPage } from './pages/AboutPage';
 import { CartProvider } from './context/CartContext';
 import { Navigation } from './components/Navigation';
 import { Cart } from './components/Cart';
-import { CheckoutPage } from './pages/CheckoutPage';
-import { ModularCheckoutPage } from './pages/ModularCheckoutPage';
-import { ModularCheckoutPage2 } from './pages/ModularCheckoutPage2';
 import { MultiStepCheckoutPage } from './pages/MultiStepCheckoutPage';
 import { DariloProductPage } from './pages/DariloProductPage';
 import { GiftBuilderPage } from './pages/GiftBuilderPage';
@@ -155,9 +152,9 @@ function App() {
               <Route path="/recipes" element={<RecipesPage />} />
               <Route path="/recipes/:id" element={<RecipeDetail />} />
               <Route path="/cart" element={<Cart />} />
-              <Route path="/checkout" element={<CheckoutPage />} />
-              <Route path="/checkout-modular" element={<ModularCheckoutPage />} />
-              <Route path="/checkout-modular2" element={<ModularCheckoutPage2 />} />
+              <Route path="/checkout" element={<MultiStepCheckoutPage />} />
+              <Route path="/checkout-modular" element={<MultiStepCheckoutPage />} />
+              <Route path="/checkout-modular2" element={<MultiStepCheckoutPage />} />
               <Route path="/checkout-steps" element={<MultiStepCheckoutPage />} />
               <Route path="/darilo" element={<DariloProductPage />} />
               <Route path="/darilo/builder/:packageId" element={<GiftBuilderPage />} />

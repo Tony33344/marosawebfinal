@@ -1,11 +1,12 @@
 // Secure CORS headers for Supabase Edge Functions
 // This file should be imported by all edge functions to ensure consistent security
 
-// Define allowed origins - replace with your actual domains
-const ALLOWED_ORIGINS = [
+// Allowed site origins. The production domain is injected via the SITE_URL
+// function secret so adding the real domain later requires no code change.
+const STATIC_ALLOWED_ORIGINS = [
+  'https://marosaf1.netlify.app',
   'https://marosakreditna.netlify.app',
   'https://marosatest.netlify.app',
-  'https://680ad6594e5703d7515a85fe--marosakreditna.netlify.app',
   'http://localhost:5173',
   'http://localhost:5174',
   'http://localhost:5175',
@@ -13,6 +14,18 @@ const ALLOWED_ORIGINS = [
   'http://localhost:5177',
   'http://localhost:3000'
 ];
+
+export function getAllowedOrigins(): string[] {
+  const origins = [...STATIC_ALLOWED_ORIGINS];
+  const siteUrl = Deno.env.get('SITE_URL');
+  if (siteUrl) origins.push(siteUrl.replace(/\/$/, ''));
+  return origins;
+}
+
+export function isAllowedOrigin(origin: string | null): boolean {
+  if (!origin) return false;
+  return getAllowedOrigins().includes(origin);
+}
 
 /**
  * Get secure CORS headers based on the request origin
@@ -22,8 +35,10 @@ const ALLOWED_ORIGINS = [
 export function getSecureCorsHeaders(request: Request): Record<string, string> {
   const origin = request.headers.get('Origin') || '';
 
-  // Only allow specified origins
-  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  // Only allow specified origins; disallowed origins get no wildcard — the
+  // browser will block the response, while the function still responds 200
+  // for server-to-server callers (which don't enforce CORS).
+  const allowedOrigin = isAllowedOrigin(origin) ? origin : 'null';
 
   return {
     'Access-Control-Allow-Origin': allowedOrigin,

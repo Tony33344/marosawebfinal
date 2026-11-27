@@ -1,95 +1,88 @@
+// create-payment-intent — creates a Stripe PaymentIntent for an EXISTING
+// order. The amount is read from the order row server-side; the client
+// can no longer set prices.
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 import Stripe from 'https://esm.sh/stripe@12.4.0?dts';
 import { getSecureCorsHeaders, handleCorsPreflightRequest } from '../secure-cors-headers.ts';
 
-serve(async (req) => {
-  // Handle CORS preflight requests
-  const preflightResponse = handleCorsPreflightRequest(req);
-  if (preflightResponse) return preflightResponse;
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
+const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 
-  // Get secure CORS headers for this request
+serve(async (req) => {
+  const preflight = handleCorsPreflightRequest(req);
+  if (preflight) return preflight;
   const corsHeaders = getSecureCorsHeaders(req);
 
-  try {
-    // Create a Supabase client with the Auth context of the function
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
-        },
-      }
-    );
-
-    // Create a Stripe instance with the Stripe secret key
-    const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY');
-
-    if (!stripeSecretKey) {
-      console.error('Stripe secret key is missing in environment variables');
-      return new Response(
-        JSON.stringify({ error: 'Server configuration error' }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
-    }
-
-    const stripe = new Stripe(stripeSecretKey, {
-      apiVersion: '2023-10-16',
+  const respond = (data: unknown, status = 200) =>
+    new Response(JSON.stringify(data), {
+      status,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-    // Parse the request body
-    const { amount, currency = 'eur', orderId } = await req.json();
-
-    if (!amount || typeof amount !== 'number' || amount <= 0) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid amount' }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
+  try {
+    const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY');
+    if (!stripeSecretKey) {
+      console.error('Stripe secret key is missing in environment variables');
+      return respond({ error: 'Server configuration error' }, 500);
     }
 
-    // Create a payment intent
+    const { orderId } = await req.json();
+    if (!orderId || typeof orderId !== 'string') {
+      return respond({ error: 'orderId is required' }, 400);
+    }
+
+    // Fetch the order — the amount comes from here, never from the client.
+    const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
+    const { data: order, error: orderError } = await supabase
+      .from('orders')
+      .select('id, order_number, total_price, payment_status, payment_method, payment_intent_id')
+      .eq('id', orderId)
+      .single();
+
+    if (orderError || !order) {
+      return respond({ error: 'Order not found' }, 404);
+    }
+    if (order.payment_method !== 'credit_card') {
+      return respond({ error: 'Order is not a card payment' }, 400);
+    }
+    if (order.payment_status === 'paid') {
+      return respond({ error: 'Order is already paid' }, 400);
+    }
+
+    const amount = Math.round(Number(order.total_price) * 100);
+    if (!amount || amount <= 0) {
+      return respond({ error: 'Invalid order total' }, 400);
+    }
+
+    const stripe = new Stripe(stripeSecretKey, { apiVersion: '2023-10-16' });
+
     try {
       const paymentIntent = await stripe.paymentIntents.create({
         amount,
-        currency,
+        currency: 'eur',
+        automatic_payment_methods: { enabled: true },
         metadata: {
-          orderId: orderId || '',
+          order_id: order.id,
+          order_number: String(order.order_number ?? ''),
         },
       });
-      
-      // Return the PaymentIntent client_secret
-      return new Response(
-        JSON.stringify({ clientSecret: paymentIntent.client_secret }),
-        {
-          status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
-    } catch (stripeError) {
+
+      await supabase
+        .from('orders')
+        .update({
+          payment_intent_id: paymentIntent.id,
+          payment_status: 'awaiting_payment',
+        })
+        .eq('id', order.id);
+
+      return respond({ clientSecret: paymentIntent.client_secret });
+    } catch (stripeError: any) {
       console.error('Stripe API error:', stripeError);
-      return new Response(
-        JSON.stringify({ error: `Stripe API error: ${stripeError.message}` }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
+      return respond({ error: `Stripe API error: ${stripeError.message}` }, 500);
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating payment intent:', error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
+    return respond({ error: error.message }, 500);
   }
 });

@@ -88,7 +88,8 @@ export const IMAGES = {
     'treehugger.com',
     'delo.si',
     'onaplus.delo.si',
-    'marosakreditna.netlify.app'
+    'marosakreditna.netlify.app',
+    'wiwjkholoebkzzjoczjn.supabase.co'
   ],
 };
 

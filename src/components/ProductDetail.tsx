@@ -613,7 +613,7 @@ export function ProductDetail() {
                                 value={quantities[option.uniq_id] || 1} // Default to 1 if undefined
                                 onChange={(e) => handleQuantityChange(option.uniq_id, e.target.value)}
                                 className="w-16 px-2 py-2 text-center border rounded focus:outline-none focus:ring-2 focus:ring-brown-500 touch-manipulation"
-                                aria-label={t('productDetail.quantityAriaLabel', `Quantity for ${option.weight}`)}
+                                aria-label={t('productDetail.quantityAriaLabel', { weight: option.weight, defaultValue: `Quantity for ${option.weight}` })}
                                 aria-describedby={`quantity-hint-${option.uniq_id}`}
                               />
                               <div id={`quantity-hint-${option.uniq_id}`} className="sr-only">

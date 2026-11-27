@@ -6,7 +6,6 @@ import { CheckCircle, ArrowLeft, Printer, CreditCard, Truck, Mail, Copy, Check }
 import { useCart } from '../context/CartContext';
 import { decryptObject, isEncrypted } from '../utils/encryption';
 import { MarosaUPNQRCode } from '../components/payment/UPNQRCode';
-import { sendOrderConfirmationEmail } from '../utils/emailService';
 
 interface OrderItem {
   product_id: string;
@@ -53,162 +52,50 @@ export const OrderSuccessPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cartCleared, setCartCleared] = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
-  const [sendingEmail, setSendingEmail] = useState(false);
 
   const searchParams = new URLSearchParams(location.search);
   const orderId = searchParams.get('order_id');
   const paymentId = searchParams.get('payment_id');
 
-  // Handle payment ID from Stripe
-  useEffect(() => {
-    // If we have a payment ID but no order ID, create a temporary order
-    if (paymentId && !orderId) {
-      // If we already have an order, don't recreate it
-      if (order) {
-        return;
-      }
-
-      const handlePaymentWithoutOrder = async () => {
-        try {
-          setLoading(true);
-
-          // Check if we already have a temporary order in session storage
-          const tempOrderStr = sessionStorage.getItem('temp_order');
-          let tempOrderData = null;
-
-          if (tempOrderStr) {
-            try {
-              tempOrderData = JSON.parse(tempOrderStr);
-            } catch (parseError) {
-              console.error('Error parsing temporary order:', parseError);
-            }
-          }
-
-          // Get payment amount and shipping address from session storage
-          const paymentAmount = sessionStorage.getItem('stripe_payment_amount') || '0';
-          const shippingAddressStr = sessionStorage.getItem('stripe_shipping_address');
-          let shippingAddress: ShippingAddress = {
-            name: '',
-            address: '',
-            city: '',
-            postalCode: '',
-            country: '',
-            phone: '',
-            email: ''
-          };
-
-          // Parse shipping address if available
-          if (shippingAddressStr) {
-            try {
-              shippingAddress = JSON.parse(shippingAddressStr);
-            } catch (parseError) {
-              console.error('Error parsing shipping address:', parseError);
-            }
-          }
-
-          // Create a temporary order object
-          const tempOrder: Order = {
-            id: tempOrderData?.id || `temp-${Date.now()}`,
-            created_at: tempOrderData?.created_at || new Date().toISOString(),
-            total_price: tempOrderData?.amount ? parseFloat(tempOrderData.amount) : parseFloat(paymentAmount),
-            status: 'processing',
-            items: [],
-            shipping_address: shippingAddress,
-            payment_method: 'credit_card'
-          };
-
-          // Update the state with the temporary order
-          setOrder(tempOrder);
-          setLoading(false);
-
-          // Clear the cart after successful payment
-          if (sessionStorage.getItem('clearCartAfterOrder') === 'true') {
-            clearCart();
-            sessionStorage.removeItem('clearCartAfterOrder');
-          }
-        } catch (err) {
-          console.error('Error handling payment without order:', err);
-          setError(t('orders.createError', 'Error creating order from payment'));
-          setLoading(false);
-        }
-      };
-
-      handlePaymentWithoutOrder();
-    }
-  }, [paymentId, orderId, order, t, clearCart]);
-
   useEffect(() => {
     // Check if we need to clear the cart (from session storage)
     const shouldClearCart = sessionStorage.getItem('clearCartAfterOrder') === 'true';
     const lastOrderId = sessionStorage.getItem('lastSuccessfulOrder');
-    const stripePaymentUsed = sessionStorage.getItem('stripe_payment_used') === 'true';
 
     if (shouldClearCart && lastOrderId && lastOrderId === orderId && !cartCleared) {
       clearCart();
       setCartCleared(true);
-
-      // Clear the session storage flags
       sessionStorage.removeItem('clearCartAfterOrder');
       sessionStorage.removeItem('lastSuccessfulOrder');
-
-      // Clean up Stripe payment data if it was used
-      if (stripePaymentUsed) {
-        sessionStorage.removeItem('stripe_payment_id');
-        sessionStorage.removeItem('stripe_payment_amount');
-        sessionStorage.removeItem('stripe_payment_used');
-      }
     }
 
     const fetchOrderDetails = async () => {
       if (!orderId && !paymentId) {
-        console.error('No order ID or payment ID found in URL');
         setError(t('orders.notFound', 'Order not found'));
         setLoading(false);
         return;
       }
 
-      // If we have a payment ID but no order ID, we'll create a temporary order in the other useEffect
-      if (paymentId && !orderId) {
-        console.log('Payment ID found but no order ID, will create temporary order');
-        return;
-      }
-
       try {
         setLoading(true);
-        const { data, error: fetchError } = await supabase
-          .from('orders')
-          .select('*')
-          .eq('id', orderId)
-          .single();
+        // Orders are served by the get-order edge function — the order UUID
+        // (or Stripe payment id) acts as the access token.
+        const { data, error: fetchError } = await supabase.functions.invoke('get-order', {
+          body: orderId ? { orderId } : { paymentId },
+        });
 
-        if (fetchError) {
-          console.error('Error fetching order:', fetchError);
-          setError(t('orders.fetchError', 'Error loading order details'));
-          setLoading(false);
-          return;
-        }
-
-        if (!data) {
+        if (fetchError || !data?.order) {
           setError(t('orders.notFound', 'Order not found'));
           setLoading(false);
           return;
         }
 
-        // Parse JSON strings
-        let parsedOrder = {
-          ...data,
-          items: typeof data.items === 'string' ? JSON.parse(data.items) : data.items,
-          shipping_address: typeof data.shipping_address === 'string'
-            ? JSON.parse(data.shipping_address)
-            : data.shipping_address
-        };
+        const parsedOrder = data.order;
 
         // Decrypt shipping address fields if they are encrypted
         const fieldsToDecrypt = ['name', 'address', 'phone'];
         if (parsedOrder.shipping_address) {
           try {
-            // Check if any fields are encrypted
             const hasEncryptedFields = fieldsToDecrypt.some(
               field => typeof parsedOrder.shipping_address[field] === 'string' &&
                       isEncrypted(parsedOrder.shipping_address[field])
@@ -222,7 +109,6 @@ export const OrderSuccessPage: React.FC = () => {
             }
           } catch (decryptError) {
             console.error('Error decrypting shipping address:', decryptError);
-            // Continue with the encrypted data if decryption fails
           }
         }
 
@@ -236,7 +122,7 @@ export const OrderSuccessPage: React.FC = () => {
     };
 
     fetchOrderDetails();
-  }, [orderId, t]);
+  }, [orderId, paymentId, t]);
 
   // These variables will be used after we confirm the order exists
   let orderDate, formattedDate, showBankDetails;
@@ -284,80 +170,7 @@ export const OrderSuccessPage: React.FC = () => {
     showBankDetails = order.payment_method === 'bank_transfer';
   }
 
-  // Send order confirmation email when order is loaded
-  // For regular orders, the email is sent from MultiStepCheckoutPage
-  // For Stripe payments, we need to send the email here
-  useEffect(() => {
-    if (order && !emailSent && !sendingEmail) {
-      // For Stripe payments, we need to ensure we have the shipping address
-      if (order.id.startsWith('temp-') && order.shipping_address &&
-          (!order.shipping_address.name || !order.shipping_address.email)) {
-        // Try to get shipping address from session storage
-        const shippingAddressStr = sessionStorage.getItem('stripe_shipping_address');
-        if (shippingAddressStr) {
-          try {
-            const storedAddress = JSON.parse(shippingAddressStr);
-            // Update the order with the shipping address
-            order.shipping_address = {
-              ...order.shipping_address,
-              ...storedAddress
-            };
-          } catch (error) {
-            console.error('Error parsing shipping address from session storage:', error);
-          }
-        }
-      }
-
-      // Only send email for Stripe payments (temp orders)
-      // Regular orders have emails sent from MultiStepCheckoutPage
-      if (order.id.startsWith('temp-') && order.shipping_address?.email) {
-        const sendStripePaymentEmail = async () => {
-          try {
-            setSendingEmail(true);
-
-            // Format order items for email
-            const emailOrderItems = order.items && Array.isArray(order.items)
-              ? order.items.map(item => ({
-                  product_name: item.product_name || 'Product',
-                  package_description: item.package_description || '',
-                  quantity: item.quantity || 1,
-                  price_per_unit: item.price_per_unit || 0,
-                  line_total: item.line_total || 0
-                }))
-              : [];
-
-            // Send email using the email service
-            const emailResult = await sendOrderConfirmationEmail(
-              order.id,
-              order.shipping_address.email,
-              order.shipping_address.name || 'Customer',
-              {
-                items: emailOrderItems,
-                total: order.total_price,
-                shippingAddress: order.shipping_address,
-                paymentMethod: 'Credit Card'
-              }
-            );
-
-            if (!emailResult.success) {
-              console.error('Failed to send Stripe payment confirmation email:', emailResult.message);
-            }
-
-            setEmailSent(true);
-          } catch (error) {
-            console.error('Error sending Stripe payment confirmation email:', error);
-          } finally {
-            setSendingEmail(false);
-          }
-        };
-
-        sendStripePaymentEmail();
-      } else {
-        // For non-Stripe orders, just mark as sent since the email was already sent
-        setEmailSent(true);
-      }
-    }
-  }, [order, emailSent, sendingEmail]);
+  // Confirmation emails are sent server-side (create-order / stripe-webhook).
 
   // Show loading state
   if (loading) {
@@ -407,10 +220,10 @@ export const OrderSuccessPage: React.FC = () => {
               <p className="text-green-700 mt-1">
                 {t('checkout.orderSuccessMessage', 'Thank you for your order! We will process it shortly.')}
               </p>
-              {order.id.startsWith('temp-') && (
+              {order.payment_method === 'credit_card' && (
                 <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-md">
                   <p className="text-amber-700 text-sm font-medium">
-                    {t('checkout.tempOrderNotice', 'Your payment was successful!')}
+                    {t('checkout.paymentConfirmedNotice', 'Your payment was successful!')}
                   </p>
                   <p className="text-amber-700 text-sm mt-1">
                     {t('checkout.tempOrderEmail', 'You will receive a confirmation email shortly with your order details.')}
@@ -438,7 +251,14 @@ export const OrderSuccessPage: React.FC = () => {
                 <span className="font-medium">{t('orders.status', 'Status')}:</span> {t(`orders.statuses.${order.status}`, order.status)}
               </p>
               <p className="text-gray-600">
-                <span className="font-medium">{t('orders.paymentMethod', 'Payment Method')}:</span> {t(`orders.paymentMethods.${order.payment_method}`, order.payment_method)}
+                <span className="font-medium">{t('orders.paymentMethod', 'Payment Method')}:</span>{' '}
+                {order.payment_method === 'pay_on_delivery' || order.payment_method === 'cod' || order.payment_method === 'cash_on_delivery'
+                  ? t('orders.paymentMethods.cash_on_delivery', 'Plačilo po povzetju')
+                  : order.payment_method === 'bank_transfer'
+                  ? t('orders.paymentMethods.bank_transfer', 'Bančno nakazilo')
+                  : order.payment_method === 'credit_card'
+                  ? t('orders.paymentMethods.credit_card', 'Kreditna kartica')
+                  : order.payment_method}
               </p>
             </div>
 
@@ -446,22 +266,12 @@ export const OrderSuccessPage: React.FC = () => {
               <h2 className="text-lg font-semibold text-gray-800 mb-2">
                 {t('orders.shippingInfo', 'Shipping Information')}
               </h2>
-              {order.id.startsWith('temp-') && (!order.shipping_address.name || !order.shipping_address.address) ? (
-                <div className="bg-gray-50 p-3 rounded-md">
-                  <p className="text-gray-600">
-                    {t('orders.tempOrderShipping', 'Podatki za dostavo bodo na voljo, ko bo vaše naročilo v celoti obdelano.')}
-                  </p>
-                </div>
-              ) : (
-                <>
-                  <p className="text-gray-600">{order.shipping_address.name}</p>
-                  <p className="text-gray-600">{order.shipping_address.address}</p>
-                  <p className="text-gray-600">{order.shipping_address.postalCode} {order.shipping_address.city}</p>
-                  <p className="text-gray-600">{order.shipping_address.country}</p>
-                  <p className="text-gray-600">{order.shipping_address.phone}</p>
-                  <p className="text-gray-600">{order.shipping_address.email}</p>
-                </>
-              )}
+              <p className="text-gray-600">{order.shipping_address?.name}</p>
+              <p className="text-gray-600">{order.shipping_address?.address}</p>
+              <p className="text-gray-600">{order.shipping_address?.postalCode} {order.shipping_address?.city}</p>
+              <p className="text-gray-600">{order.shipping_address?.country}</p>
+              <p className="text-gray-600">{order.shipping_address?.phone}</p>
+              <p className="text-gray-600">{order.shipping_address?.email}</p>
 
               {/* Gift Recipient Address - Extract from notes if present */}
               {(() => {
@@ -604,22 +414,11 @@ export const OrderSuccessPage: React.FC = () => {
           <h2 className="text-lg font-semibold text-gray-800 mb-4">
             {t('orders.items', 'Order Items')}
           </h2>
-          {order.id.startsWith('temp-') && (!order.items || order.items.length === 0) ? (
+          {(!order.items || order.items.length === 0) ? (
             <div className="bg-gray-50 p-4 rounded-md mb-6">
               <p className="text-gray-600">
-                {t('orders.tempOrderItems', 'Podrobnosti naročila bodo na voljo, ko bo vaše naročilo v celoti obdelano.')}
+                {t('orders.noItems', 'No items found for this order.')}
               </p>
-              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                <div className="flex items-center">
-                  <CreditCard className="w-5 h-5 text-blue-600 mr-2" />
-                  <p className="text-blue-700 font-medium">
-                    {t('orders.paymentSuccessful', 'Plačilo uspešno')}
-                  </p>
-                </div>
-                <p className="text-blue-600 text-sm mt-1">
-                  {t('orders.paymentAmount', 'Znesek plačila')}: {order.total_price.toFixed(2)} €
-                </p>
-              </div>
             </div>
           ) : (
             <div className="overflow-x-auto">

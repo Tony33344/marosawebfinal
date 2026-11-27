@@ -46,12 +46,15 @@ export function validateFullName(name: string): boolean {
 export function validateSlovenianPhoneNumber(phone: string): boolean {
   const cleaned = phone.replace(/[\s\-\(\)\.]/g, '');
 
-  // Remove +386 prefix if present
+  // Remove +386/386 prefix if present; Slovenian numbers drop the trunk 0
+  // in international format, so restore it (+386 41 234 567 → 041234567)
   let withoutCountryCode = cleaned;
   if (cleaned.startsWith('+386')) {
-    withoutCountryCode = cleaned.substring(4);
+    withoutCountryCode = '0' + cleaned.substring(4);
+  } else if (cleaned.startsWith('00386')) {
+    withoutCountryCode = '0' + cleaned.substring(5);
   } else if (cleaned.startsWith('386')) {
-    withoutCountryCode = cleaned.substring(3);
+    withoutCountryCode = '0' + cleaned.substring(3);
   }
 
   // Mobile numbers (9 digits) - Based on official operator prefixes
@@ -272,6 +275,60 @@ export function validateSlovenianData(data: {
     isValid: Object.keys(errors).length === 0,
     errors
   };
+}
+
+/**
+ * Country-aware checkout validation.
+ * Strict Slovenian rules apply only when shipping to Slovenija;
+ * other countries get lenient international checks.
+ */
+export function validateCheckoutData(data: {
+  name?: string;
+  postalCode: string;
+  phone?: string;
+  city: string;
+  address?: string;
+  country?: string;
+}): SlovenianValidationResult {
+  const isSlovenia = !data.country || data.country === 'Slovenija' || data.country === 'Slovenia';
+  if (isSlovenia) {
+    return validateSlovenianData(data);
+  }
+
+  const errors: SlovenianValidationResult['errors'] = {};
+
+  if (data.name && !validateFullName(data.name)) {
+    errors.name = 'Please enter your full name (first and last name)';
+  }
+
+  // International postal codes: 3-10 alphanumeric characters
+  const postalCleaned = data.postalCode.replace(/[\s\-]/g, '');
+  if (!/^[A-Za-z0-9]{3,10}$/.test(postalCleaned)) {
+    errors.postalCode = 'Please enter a valid postal code';
+  }
+
+  // International phone numbers: digits with optional + prefix, 8-15 digits
+  if (data.phone) {
+    const phoneCleaned = data.phone.replace(/[\s\-\(\)\.]/g, '');
+    if (!/^\+?\d{8,15}$/.test(phoneCleaned)) {
+      errors.phone = 'Please enter a valid phone number';
+    }
+  }
+
+  // Lenient city check — at least 2 letters
+  if (!/^[\p{L}\s\-'.]{2,}$/u.test(data.city.trim())) {
+    errors.city = 'Please enter a valid city';
+  }
+
+  // Lenient address check — at least 5 chars, contains a letter and a number
+  if (data.address) {
+    const addr = data.address.trim();
+    if (addr.length < 5 || !/\p{L}/u.test(addr) || !/\d/.test(addr)) {
+      errors.address = 'Please enter a valid address';
+    }
+  }
+
+  return { isValid: Object.keys(errors).length === 0, errors };
 }
 
 // Keep the old function for backward compatibility
