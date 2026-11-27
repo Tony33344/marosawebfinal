@@ -260,3 +260,32 @@ CREATE TRIGGER profiles_protect_is_admin_ins
 CREATE TRIGGER profiles_protect_is_admin_upd
   BEFORE UPDATE ON public.profiles
   FOR EACH ROW EXECUTE FUNCTION public.protect_is_admin_flag();
+
+-- ================= RPC FUNCTION SURFACE LOCKDOWN =================
+-- PostgREST inherits EXECUTE from PUBLIC; revoking per-role alone is not enough.
+REVOKE EXECUTE ON FUNCTION public.get_next_order_number() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.get_next_order_number() TO service_role;
+REVOKE EXECUTE ON FUNCTION public.create_analytics_events_table() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.create_analytics_daily_metrics_table() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.execute_sql(text) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.set_subscriber_tokens() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.sync_user_admin_status() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.update_loyalty_points() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.update_stock_on_order() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.protect_is_admin_flag() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.is_admin() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.is_admin(uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.is_admin() TO service_role;
+GRANT EXECUTE ON FUNCTION public.is_admin(uuid) TO service_role;
+REVOKE EXECUTE ON FUNCTION public.update_translations_updated_at() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.update_modified_column() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.generate_random_token() FROM PUBLIC;
+
+-- ================= ORDERS INSERT — no direct client inserts =================
+-- Orders are created exclusively by the create-order edge function
+-- (service role bypasses RLS). Prevents forged 'paid' orders and
+-- server-side-pricing bypasses via direct REST inserts.
+DROP POLICY IF EXISTS orders_insert ON public.orders;
+CREATE POLICY orders_insert ON public.orders
+  FOR INSERT WITH CHECK (is_admin());
